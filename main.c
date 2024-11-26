@@ -20,7 +20,7 @@ int main(){
         printf("Link ting puen");
     }
     something(4);
-    printf("panyaorn nong nongggggggggg!!!!!!!!!!!!");
+    printf("hounghenghounghenghoungheng!!!!!!!!!!!!");
 }
 
 void adding(int a,int b){
