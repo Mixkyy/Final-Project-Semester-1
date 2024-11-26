@@ -21,7 +21,7 @@ int main(){
     }
     something(4);
     printf("hounghenghounghenghoungheng!!!!!!!!!!!!");
-    printf("oh ho ho ho ho ho ho ho");
+    printf("oh ho ho ho ho ho ho ho no no no");
 }
 
 
