@@ -8,7 +8,7 @@ int main(){
     int link = 49;
     printf("hello baitoey\n");
     adding(2,8);
-    
+    divide(10,5);
     int a = multiplication(4,9);
     printf("%d", a);
     printf("Hello World");
@@ -22,6 +22,10 @@ int main(){
 
 void adding(int a,int b){
     printf("%d",a+b);
+}
+
+void divide(int a,int b){
+    printf("%d",a/b);
 }
 
 
