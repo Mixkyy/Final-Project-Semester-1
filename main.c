@@ -5,8 +5,7 @@ int multiplication(int a, int b){
 }
 
 int main(){
-    int link;
-    scanf("%d", &link);
+    int link = 49;
     printf("hello baitoey\n");
     printf("hello kan\n");
     printf("i sus so hard");
