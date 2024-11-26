@@ -18,6 +18,7 @@ int main(){
     if (link == 49){
         printf("Link ting puen");
     }
+    something(4);
 }
 
 void adding(int a,int b){
@@ -28,4 +29,8 @@ void divide(int a,int b){
     printf("%d",a/b);
 }
 
+void something(int a){
+    int x = a * 2;
+    printf("%d", x);
+}
 
