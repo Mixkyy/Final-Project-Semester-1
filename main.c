@@ -14,6 +14,7 @@ int main(){
     printf("Hello World");
     printf("linkneverleftfriend");
     printf("Phureeruch");
+    printf("linkonfire");
 }
 
 void adding(int a,int b){
