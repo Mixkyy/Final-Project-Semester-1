@@ -11,10 +11,10 @@ int main(){
     divide(10,5);
     int a = multiplication(4,9);
     printf("%d", a);
-    printf("Hello World");
-    printf("linkneverleftfriend");
-    printf("Phureeruch");
-    printf("linkonfire");
+    printf("Hello World\n");
+    printf("linkneverleftfriend\n");
+    printf("Phureeruch\n");
+    printf("linkonfire\n");
     if (link == 49){
         printf("Link ting puen");
     }
