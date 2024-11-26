@@ -14,6 +14,7 @@ int main(){
     printf("Hello World");
     printf("linkneverleftfriend");
     printf("Phureeruch");
+    printf("linkonfire");
     if (link == 49){
         printf("Link ting puen");
     }
