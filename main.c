@@ -6,4 +6,5 @@ int main(){
     printf("i sus so hard");
     printf("what");
     printf("micky");
+    printf("oh hooo");
 }
