@@ -11,9 +11,11 @@ int main(){
     
     int a = multiplication(4,9);
     printf("%d", a);
+    printf("Hello World");
 }
 
 void adding(int a,int b){
     printf("%d",a+b);
 }
+
 
