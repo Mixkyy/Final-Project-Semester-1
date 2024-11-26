@@ -1,5 +1,9 @@
 #include <stdio.h>
 
+int multiplication(int a, int b){
+    return a*b;
+}
+
 int main(){
     int link;
     scanf("%d", &link);
@@ -9,7 +13,9 @@ int main(){
     printf("what");
     printf("micky");
     printf("oh hooo");
-    if (link == "49"){
+    if (link == 49){
         printf("ting puen");
     }
+    int a = multiplication(4,9);
+    printf("%d", a);
 }
