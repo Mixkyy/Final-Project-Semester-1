@@ -21,7 +21,9 @@ int main(){
     }
     something(4);
     printf("hounghenghounghenghoungheng!!!!!!!!!!!!");
+    printf("oh ho nigger");
 }
+
 
 void adding(int a,int b){
     printf("%d",a+b);
