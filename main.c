@@ -17,7 +17,7 @@ int main(){
     printf("linkonfire\n");
     printf("Linkalwaysleftfriendbecauseofheeheeheeheeheeheeheehee");
     if (link == 49){
-        printf("Link ting puen every time");
+        printf("Link ting puen every time everyday");
     }
     something(4);
     printf("hounghenghounghenghoungheng!!!!!!!!!!!!");
@@ -34,7 +34,7 @@ void divide(int a,int b){
 }
 
 void something(int a){
-    int x = a * 2;
+    int x = a * 3;
     printf("%d", x);
 }
 
