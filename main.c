@@ -9,4 +9,7 @@ int main(){
     printf("what");
     printf("micky");
     printf("oh hooo");
+    if (link == "1"){
+        printf("ting puen");
+    }
 }
