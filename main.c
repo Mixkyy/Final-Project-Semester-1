@@ -12,6 +12,7 @@ int main(){
     int a = multiplication(4,9);
     printf("%d", a);
     printf("Hello World");
+    printf("linkneverleftfriend");
 }
 
 void adding(int a,int b){
