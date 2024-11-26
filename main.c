@@ -21,7 +21,7 @@ int main(){
     }
     something(4);
     printf("hounghenghounghenghoungheng!!!!!!!!!!!!");
-    printf("oh ho nigger");
+    printf("oh ho ho ho ho ho ho ho");
 }
 
 
