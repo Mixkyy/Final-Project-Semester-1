@@ -13,6 +13,7 @@ int main(){
     printf("%d", a);
     printf("Hello World");
     printf("linkneverleftfriend");
+    printf("Phureeruch");
 }
 
 void adding(int a,int b){
