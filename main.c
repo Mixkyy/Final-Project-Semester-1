@@ -1,18 +1,18 @@
 #include <stdio.h>
-#include <stdlib.h>  
+#include <stdlib.h>
 
 void clearScreen() {
     #ifdef _WIN32
-        system("cls");  // For Windows
+        system("cls");
     #else
-        system("clear");  
+        system("clear");
     #endif
 }
 
 void ownerMenu() {
     int ownerChoice;
     do {
-        clearScreen();  
+        clearScreen();
         printf("=======================================\n");
         printf("        OWNER FEATURES MENU\n");
         printf("=======================================\n");
@@ -27,30 +27,30 @@ void ownerMenu() {
 
         switch (ownerChoice) {
             case 1:
-                printf("Viewing Reports...\n");
                 break;
             case 2:
-                printf("Accessing CRUD Operations...\n");
                 break;
             case 3:
-                printf("Restocking Items...\n");
                 break;
             case 4:
-                printf("Managing Discount Coupons...\n");
                 break;
             case 5:
-                printf("Returning to Main Menu...\n");
-                break;
+                return;
             default:
                 printf("Invalid choice. Please try again.\n");
+                printf("Press Enter to continue...");
+                getchar();  // To capture the Enter key press before continuing
+                getchar();  // Wait for the user to press Enter
+                break;
         }
-    } while (ownerChoice != 5);  // Return to Main Menu when the user selects 5
+
+    } while (ownerChoice != 5);
 }
 
 void customerMenu() {
     int customerChoice;
     do {
-        clearScreen();  
+        clearScreen();
         printf("=======================================\n");
         printf("       CUSTOMER FEATURES MENU\n");
         printf("=======================================\n");
@@ -63,18 +63,20 @@ void customerMenu() {
 
         switch (customerChoice) {
             case 1:
-                printf("Viewing Available Items...\n");
                 break;
             case 2:
-                printf("Processing Purchase...\n");
                 break;
             case 3:
-                printf("Returning to Main Menu...\n");
-                break;
+                return;
             default:
                 printf("Invalid choice. Please try again.\n");
+                printf("Press Enter to continue...");
+                getchar();  // To capture the Enter key press before continuing
+                getchar();  // Wait for the user to press Enter
+                break;
         }
-    } while (customerChoice != 3); 
+
+    } while (customerChoice != 3);
 }
 
 void mainMenu() {
@@ -93,17 +95,22 @@ void mainMenu() {
 
         switch (choice) {
             case 1:
-                ownerMenu();  
+                ownerMenu();
                 break;
             case 2:
-                customerMenu(); 
+                customerMenu();
                 break;
             case 3:
-                printf("Exiting the system\n");
+                printf("Exiting the system. Goodbye!\n");
                 break;
             default:
                 printf("Invalid choice. Please try again.\n");
+                printf("Press Enter to continue...");
+                getchar();  // To capture the Enter key press before continuing
+                getchar();  // Wait for the user to press Enter
+                break;
         }
+
     } while (choice != 3);
 }
 
