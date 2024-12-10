@@ -18,6 +18,7 @@ void clearInputBuffer() {
     while (getchar() != '\n');
 }
 
+
 // View Discount Coupons
 
 #define MAX_ROWS 100
@@ -39,8 +40,25 @@ typedef struct {
     char expire[20];   
 } Stock;
 
+typedef struct {
+    char id[10];
+    char name[50];
+    int quantity;
+    char unit[10];
+    char restock[20];
+    char expire[20];
+} Item;
+
+// Declare Functions for Restock
+
+int readCSV(const char *filename, Item items[], int *rowCount);
+void writeCSV(const char *filename, Item items[], int rowCount);
+int getUniqueIngredients(Item items[], int rowCount, char uniqueNames[][50]);
+void displayCombinedStock(Item items[], int rowCount, char uniqueNames[][50], int uniqueCount);
+void restockMenu(Item items[], int *rowCount, char uniqueNames[][50], int uniqueCount);
 
 
+// End of Declaring Functions for Restock
 int readDiscountCoupons(const char *filename, DiscountCoupon coupons[], int *rowCount) {
     FILE *file = fopen(filename, "r");
     if (!file) {
@@ -228,7 +246,7 @@ void ManageCouponsMenu() {
         }
 }
 
-// View Menu (Menu CRUD operations
+// View Menu (Menu CRUD operations)
 
 void ViewMenu() {
     typedef struct {
@@ -330,16 +348,8 @@ void MenuCRUD() {
 // View Stock (Stock CRUD Operations)
 
 void ViewStock() {
-    typedef struct {
-        char id[20];
-        char name[100];
-        int quantity;
-        char unit[20];
-        char restock[20];
-        char expire[20];
-    } StockItem;
 
-    StockItem stock[MAX_ROWS];
+    Stock stock[MAX_ROWS];
     int rowCount = 0;
 
     FILE *file = fopen("Stock.csv", "r");
@@ -506,6 +516,238 @@ void CRUDoperationMenu() {
         }
 }
 
+// Restock Items Function in Owner Functions
+
+int RestockFunction() {
+    clearScreen();
+    Item items[MAX_ROWS];
+    int rowCount = 0;
+
+    if (!readCSV("Stock.csv", items, &rowCount)) {
+        printf("Error reading the file.\n");
+        return EXIT_FAILURE;
+    }
+
+    char uniqueNames[MAX_ROWS][50];
+    int uniqueCount = getUniqueIngredients(items, rowCount, uniqueNames);
+
+    restockMenu(items, &rowCount, uniqueNames, uniqueCount);
+
+    writeCSV("Stock.csv", items, rowCount);
+}
+
+int readCSV(const char *filename, Item items[], int *rowCount) {
+    FILE *file = fopen(filename, "r");
+    if (!file) {
+        perror("Error opening file");
+        return 0;
+    }
+
+    char line[MAX_LINE_LENGTH];
+    int isHeader = 1;
+    *rowCount = 0;
+
+    while (fgets(line, sizeof(line), file)) {
+        if (isHeader) {
+            isHeader = 0;
+            continue;
+        }
+
+        sscanf(line, "%[^,],%[^,],%d,%[^,],%[^,],%s",
+               items[*rowCount].id,
+               items[*rowCount].name,
+               &items[*rowCount].quantity,
+               items[*rowCount].unit,
+               items[*rowCount].restock,
+               items[*rowCount].expire);
+
+        (*rowCount)++;
+    }
+
+    fclose(file);
+    return 1;
+}
+
+void writeCSV(const char *filename, Item items[], int rowCount) {
+    FILE *file = fopen(filename, "w");
+    if (!file) {
+        perror("Error opening file");
+        return;
+    }
+
+    fprintf(file, "id,name,quantity,unit,restock,expire\n");
+
+    for (int i = 0; i < rowCount; i++) {
+        fprintf(file, "%s,%s,%d,%s,%s,%s\n",
+                items[i].id,
+                items[i].name,
+                items[i].quantity,
+                items[i].unit,
+                items[i].restock,
+                items[i].expire);
+    }
+
+    fclose(file);
+}
+
+int getUniqueIngredients(Item items[], int rowCount, char uniqueNames[][50]) {
+    int uniqueCount = 0;
+
+    for (int i = 0; i < rowCount; i++) {
+        int isUnique = 1;
+
+        for (int j = 0; j < uniqueCount; j++) {
+            if (strcmp(items[i].name, uniqueNames[j]) == 0) {
+                isUnique = 0;
+                break;
+            }
+        }
+
+        if (isUnique) {
+            strcpy(uniqueNames[uniqueCount], items[i].name);
+            uniqueCount++;
+        }
+    }
+
+    return uniqueCount;
+}
+
+void displayCombinedStock(Item items[], int rowCount, char uniqueNames[][50], int uniqueCount) {
+    printf("=======================================\n");
+    printf("             Current Stock             \n");
+    printf("=======================================\n");
+
+    for (int i = 0; i < uniqueCount; i++) {
+        int totalQuantity = 0;
+        char unit[10] = "";
+
+        for (int j = 0; j < rowCount; j++) {
+            if (strcmp(items[j].name, uniqueNames[i]) == 0) {
+                totalQuantity += items[j].quantity;
+
+                if (strlen(items[j].unit) > 0) {
+                    strcpy(unit, items[j].unit);
+                }
+            }
+        }
+
+        if (strlen(unit) == 0) {
+            strcpy(unit, "unit");
+        }
+
+        printf("%d. %s: %d %s\n", i + 1, uniqueNames[i], totalQuantity, unit);
+    }
+
+    printf("=======================================\n");
+}
+
+// Display Updated Combined Stock
+
+void displayUpdatedCombinedStock(Item items[], int rowCount, char uniqueNames[][50], int uniqueCount) {
+    printf("=======================================\n");
+    printf("             Updated Stock             \n");
+    printf("=======================================\n");
+
+    for (int i = 0; i < uniqueCount; i++) {
+        int totalQuantity = 0;
+        char unit[10] = "";
+
+        for (int j = 0; j < rowCount; j++) {
+            if (strcmp(items[j].name, uniqueNames[i]) == 0) {
+                totalQuantity += items[j].quantity;
+
+                if (strlen(items[j].unit) > 0) {
+                    strcpy(unit, items[j].unit);
+                }
+            }
+        }
+
+        if (strlen(unit) == 0) {
+            strcpy(unit, "unit");
+        }
+
+        printf("%d. %s: %d %s\n", i + 1, uniqueNames[i], totalQuantity, unit);
+    }
+
+    printf("=======================================\n");
+    printf("Press Enter to continue...");
+    getchar(); // Wait for user input
+    getchar(); // Handle newline left by previous input
+    clearScreen();
+    return;
+}
+
+
+void restockMenu(Item items[], int *rowCount, char uniqueNames[][50], int uniqueCount) {
+    int choice, restockAmount;
+    char restockDate[20], expireDate[20];
+
+    displayCombinedStock(items, *rowCount, uniqueNames, uniqueCount);
+
+    printf("Select an ingredient to restock (1-%d): ", uniqueCount);
+    scanf("%d", &choice);
+
+    if (choice < 1 || choice > uniqueCount) {
+        printf("Invalid choice. Exiting restock process.\n");
+        return;
+    }
+
+    choice--;
+
+    printf("Enter restock amount for %s : ", uniqueNames[choice]);
+    scanf("%d", &restockAmount);
+
+    printf("Enter restock date (e.g., 1/1/2025): ");
+    scanf("%s", restockDate);
+
+    printf("Enter expiration date (e.g., 7/1/2025): ");
+    scanf("%s", expireDate);
+
+    int restocked = 0;
+
+    for (int i = 0; i < *rowCount; i++) {
+        if (strcmp(items[i].name, uniqueNames[choice]) == 0 && items[i].quantity == 0) {
+            items[i].quantity += restockAmount;
+            strcpy(items[i].restock, restockDate);
+            strcpy(items[i].expire, expireDate);
+            restocked = 1;
+            break;
+        }
+    }
+
+    if (!restocked) {
+        for (int i = 0; i < *rowCount; i++) {
+            if (strcmp(items[i].name, uniqueNames[choice]) == 0 &&
+                strcmp(items[i].expire, expireDate) == 0) {
+                items[i].quantity += restockAmount;
+                restocked = 1;
+                break;
+            }
+        }
+    }
+
+    if (!restocked) {
+        if (*rowCount < MAX_ROWS) {
+            Item newItem;
+            sprintf(newItem.id, "NEW%d", *rowCount + 1);
+            strcpy(newItem.name, uniqueNames[choice]);
+            newItem.quantity = restockAmount;
+            strcpy(newItem.unit, items[choice].unit);
+            strcpy(newItem.restock, restockDate);
+            strcpy(newItem.expire, expireDate);
+            items[*rowCount] = newItem;
+            (*rowCount)++;
+        } else {
+            printf("Error: Cannot add new row. Maximum capacity reached.\n");
+        }
+    }
+    clearScreen();
+
+    printf("Restocked %s. Updated inventory:\n", uniqueNames[choice]);
+    displayUpdatedCombinedStock(items, *rowCount, uniqueNames, uniqueCount);
+}
+
+
 // Owner Menu
 
 void ownerMenu() {
@@ -533,6 +775,7 @@ void ownerMenu() {
                 CRUDoperationMenu();
                 break;
             case 3:
+                RestockFunction();
                 break;
             case 4:
                 break;
@@ -698,99 +941,7 @@ void mainMenu() {
     } while (choice != 3);
 }
 
-#define MAX_LINE_LENGTH 1024
-#define MAX_ROWS 100
-typedef struct {
-    char id[10];
-    char name[50];
-    int quantity;
-    char unit[10];
-    char re_stock[20];
-    char expire[20];
-} Item;
-// Function prototypes
-int readProduct(const char *filename, Item items[], int *rowCount);
-void writeProduct(const char *filename, Item items[], int rowCount);
-
 int main() {
    mainMenu();
     return 0;
-    Item items[MAX_ROWS];
-    int rowCount = 0;
-
-    // Read the CSV file
-    if (!readProduct("Product.csv", items, &rowCount)) {
-        printf("Error reading the file.\n");
-        return EXIT_FAILURE;
     }
-
-    for (int i = 0; i < rowCount; i++) {
-        if (strcmp(items[i].id, "N1") == 0) {
-            items[i].quantity = 40;
-        }
-    }
-
-    // Overwrite the original file with the updated content
-    writeProduct("Product.csv", items, rowCount);
-
-    printf("the data have update to Product.csv\n");
-    return EXIT_SUCCESS;
-}
-int readProduct(const char *filename, Item items[], int *rowCount) {
-    FILE *file = fopen(filename, "r");
-    if (!file) {
-        perror("Error opening file");
-        return 0;
-    }
-
-    char line[MAX_LINE_LENGTH];
-    int isHeader = 1;
-    *rowCount = 0;
-
-    while (fgets(line, sizeof(line), file)) {
-        if (isHeader) {
-            isHeader = 0; // Skip the header
-            continue;
-        }
-
-        // Parse the row and populate the structure
-        sscanf(line, "%[^,],%[^,],%d,%[^,],%[^,],%s",
-               items[*rowCount].id,
-               items[*rowCount].name,
-               &items[*rowCount].quantity,
-               items[*rowCount].unit,
-               items[*rowCount].re_stock,
-               items[*rowCount].expire);
-
-        (*rowCount)++;
-    }
-
-    fclose(file);
-    return 1;
-}
-
-// Function to overwrite the CSV file with updated data
-void writeProduct(const char *filename, Item items[], int rowCount) {
-    FILE *file = fopen(filename, "w");
-    if (!file) {
-        perror("Error opening file");
-        return;
-    }
-
-    // Write the header
-    fprintf(file, "id,name,quantity,unit,re-stock,expire\n");
-
-    // Write each row of data
-    for (int i = 0; i < rowCount; i++) {
-        fprintf(file, "%s,%s,%d,%s,%s,%s\n",
-                items[i].id,
-                items[i].name,
-                items[i].quantity,
-                items[i].unit,
-                items[i].re_stock,
-                items[i].expire);
-    }
-
-    fclose(file);
-}
-

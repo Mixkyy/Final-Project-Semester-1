@@ -1,23 +1,13 @@
-﻿id,name,quantity,unit,re-stock,expire
-N1,Noodles,60000,g,1/1/2025,7/1/2025
-N2,Noodles,0,g,,
-GP1,Roasted Pork,20000,g,1/1/2025,7/1/2025
-GP2,Roasted Pork,0,g,,
-GC1,Roasted Chicken,20000,g,1/1/2025,7/1/2025
-GC2,Roasted Chicken,0,g,,
+id,name,quantity,unit,restock,expire
+N1,Noodles,60000,gram,10/15/2024,15/12/2024
+GP1,Roasted Pork,10,gram,1/1/2025,7/1/2025
+GC1,Roasted Chicken,20000,gram,1/1/2025,7/1/2025
 SW1,Shrimp Wonton,80,piece,1/1/2025,3/1/2025
-SW2,Shrimp Wonton,0,piece,,
 PW1,Pork Wonton,80,piece,1/1/2025,3/1/2025
-PW2,Pork Wonton,0,piece,,
-V1,Vegetables,5000,g,1/1/2025,2/1/2025
-V2,Vegetables,0,g,,
+V1,Vegetables,5000,gram,1/1/2025,2/1/2025
 E1,Egg,50,Egg,1/1/2025,7/1/2025
-E2,Egg,0,Egg,,
-MP1,Minced Pork,20000,g,1/1/2025,3/1/2025
-MP2,Minced Pork,0,g,,
-CP1,Crispy Pork,5000,g,1/1/2025,2/1/2025
-CP2,Crispy Pork,0,g,,
-C1,Crab,10000,g,1/1/2025,3/1/2025
-C2,Crab,0,g,,
-S1,Shrimp,10000,g,1/1/2025,3/1/2025
-S2,Shrimp,0,g,,
+MP1,Minced Pork,20000,gram,1/1/2025,3/1/2025
+CP1,Crispy Pork,5000,gram,1/1/2025,2/1/2025
+C1,Crab,10000,gram,1/1/2025,3/1/2025
+S1,Shrimp,10000,gram,1/1/2025,3/1/2025
+UN1,Uni,1000,gram,16/1/2025,23/1/2025
