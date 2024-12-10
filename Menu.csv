@@ -1,9 +1,23 @@
-﻿Code,Name,Price,Description
-1,Roasted Pork Noodles,50,Noodles / Vegetables / Roasted Pork
-2,Roasted Pork Noodles with Shrimp Wonton,70,Noodles / Vegetables / Roasted Pork / Shrimp Wonton
-3,Roasted Chicken Noodles with Shrimp Wonton,80,Noodles / Vegetables / Roasted Chicken / Pork Wonton
-4,Shrimp Noodles with Egg,90,Noodles / Vegetables / Shrimp / Egg
-5,Crab Noodles with Shrimp Wonton,100,Noodles / Vegetables / Crab / Shrimp Wonton
-6,All In One Non-Seafood,150,Noodles / Vegetables / Roasted Pork/ Roasted Chicken / Minced Pork/ Crispy Pork / Shrimp Wonton / Pork Wonton
-7,Crispy Pork Noodle with Pork Wonton,80,Noodles / Vegetables / Crispy Pork / Pork Wonton
-8,Minced Pork Noodles with Pork Wonton,70,Noodles / Vegetables / Minced Pork / Pork Wonton
+﻿id,name,quantity,unit,re-stock,expire
+N1,Noodles,60000,g,1/1/2025,7/1/2025
+N2,Noodles,0,g,,
+GP1,Roasted Pork,20000,g,1/1/2025,7/1/2025
+GP2,Roasted Pork,0,g,,
+GC1,Roasted Chicken,20000,g,1/1/2025,7/1/2025
+GC2,Roasted Chicken,0,g,,
+SW1,Shrimp Wonton,80,piece,1/1/2025,3/1/2025
+SW2,Shrimp Wonton,0,piece,,
+PW1,Pork Wonton,80,piece,1/1/2025,3/1/2025
+PW2,Pork Wonton,0,piece,,
+V1,Vegetables,5000,g,1/1/2025,2/1/2025
+V2,Vegetables,0,g,,
+E1,Egg,50,Egg,1/1/2025,7/1/2025
+E2,Egg,0,Egg,,
+MP1,Minced Pork,20000,g,1/1/2025,3/1/2025
+MP2,Minced Pork,0,g,,
+CP1,Crispy Pork,5000,g,1/1/2025,2/1/2025
+CP2,Crispy Pork,0,g,,
+C1,Crab,10000,g,1/1/2025,3/1/2025
+C2,Crab,0,g,,
+S1,Shimp,10000,g,1/1/2025,3/1/2025
+S2,Shimp,0,g,,
