@@ -217,24 +217,24 @@ void ManageCouponsMenu() {
         }
 }
 
-// CRUD Operation Menu
+// Menu CRUD operations
 
-void CRUDoperationMenu() {
-    int CRUDchoice;
+void MenuCRUD() {
+    int MenuCRUDchoice;
     clearScreen();
     printf("=======================================\n");
-    printf("            CRUD Operations\n");
+    printf("          Menu CRUD Operations\n");
     printf("=======================================\n");
-    printf("1. Create A New Product\n");
-    printf("2. View Product\n");
-    printf("3. Edit A Product\n");
-    printf("4. Delete A Product\n");
-    printf("5. Return to Owner Features\n");
+    printf("1. Create A New Menu\n");
+    printf("2. View Menu\n");
+    printf("3. Edit An Existing Menu\n");
+    printf("4. Delete Menu\n");
+    printf("5. Return To Owner Features\n");
     printf("=======================================\n");
     printf("Enter your choice: ");
-        scanf("%d", &CRUDchoice);
+        scanf("%d", &MenuCRUDchoice);
         clearInputBuffer();
-        switch (CRUDchoice) {
+        switch (MenuCRUDchoice) {
             case 1:
                 break;
             case 2:
@@ -244,6 +244,38 @@ void CRUDoperationMenu() {
             case 4:
                 break;
             case 5:
+                return;
+                break;
+            default:
+                printf("Invalid choice. Please try again.\n");
+                printf("Press Enter to continue...");
+                getchar();  
+                MenuCRUD();
+        }
+}
+
+// CRUD Operation
+
+void CRUDoperationMenu() {
+    int CRUDchoice;
+    clearScreen();
+    printf("=======================================\n");
+    printf("            CRUD Operations\n");
+    printf("=======================================\n");
+    printf("1. Edit Menu\n");
+    printf("2. Edit Stock\n");
+    printf("2. Return to Owner Features\n");
+    printf("=======================================\n");
+    printf("Enter your choice: ");
+        scanf("%d", &CRUDchoice);
+        clearInputBuffer();
+        switch (CRUDchoice) {
+            case 1:
+            MenuCRUD();
+                break;
+            case 2:
+                break;
+            case 3:
                 return;
             default:
                 printf("Invalid choice. Please try again.\n");
