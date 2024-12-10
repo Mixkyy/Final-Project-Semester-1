@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+// Function to clear the terminal
+
 void clearScreen() {
     #ifdef _WIN32
         system("cls");
@@ -10,12 +12,15 @@ void clearScreen() {
     #endif
 }
 
+// Function to clear user's input
 
 void clearInputBuffer() {
     while (getchar() != '\n');
 }
 
-void ManageCoupons() {
+// Manage Coupon Menu
+
+void ManageCouponsMenu() {
         int CouponChoice;
     clearScreen();
     printf("=======================================\n");
@@ -43,7 +48,9 @@ void ManageCoupons() {
         }
 }
 
-void CRUDoperation() {
+// CRUD Operation Menu
+
+void CRUDoperationMenu() {
     int CRUDchoice;
     clearScreen();
     printf("=======================================\n");
@@ -73,10 +80,11 @@ void CRUDoperation() {
                 printf("Invalid choice. Please try again.\n");
                 printf("Press Enter to continue...");
                 getchar();  
-                CRUDoperation();
+                CRUDoperationMenu();
         }
 }
 
+// Owner Menu
 
 void ownerMenu() {
     int ownerChoice;
@@ -99,12 +107,12 @@ void ownerMenu() {
             case 1:
                 break;
             case 2:
-                CRUDoperation();
+                CRUDoperationMenu();
                 break;
             case 3:
                 break;
             case 4:
-                ManageCoupons();
+                ManageCouponsMenu();
                 break;
             case 5:
                 return;
@@ -117,6 +125,8 @@ void ownerMenu() {
 
     } while (ownerChoice != 5);
 }
+
+// View Avaiable Items Menu
 
 void viewAvailableItems() {
     clearScreen(); 
@@ -132,8 +142,6 @@ void viewAvailableItems() {
     getchar();  
     
 }
-
-
 
 
 
@@ -159,6 +167,8 @@ void searchForItem() {
     printf("Press Enter to continue...");
     getchar();  
 }
+
+// Customer Menu
 
 void customerMenu() {
     int customerChoice;
@@ -225,6 +235,8 @@ void customerMenu() {
 
     } while (customerChoice != 3);
 }
+
+// Main Menu
 
 void mainMenu() {
     int choice;
