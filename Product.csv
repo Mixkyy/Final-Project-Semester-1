@@ -1,5 +1,5 @@
-﻿id,name,quantity,unit,re-stock,expire
-N1,Noodle,60,kg,1/1/2025,7/1/2025
+id,name,quantity,unit,re-stock,expire
+N1,Noodle,40,kg,1/1/2025,7/1/2025
 N2,Noodle,0,kg,,
 GP1,Grilled Pork,20,kg,1/1/2025,7/1/2025
 GP2,Grilled Pork,0,kg,,
@@ -15,5 +15,5 @@ E1,Egg,50,Egg,1/1/2025,7/1/2025
 E2,Egg,0,Egg,,
 MP1,Minced Pork,20,kg,1/1/2025,3/1/2025
 MP2,Minced Pork,0,kg,,
-,,,,,
-,,,,,
+,,0,,,
+,,0,,,

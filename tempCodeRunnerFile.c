@@ -1,1 +1,2 @@
- // return 0;
+ mainMenu();
+    return 0;

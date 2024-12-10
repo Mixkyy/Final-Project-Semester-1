@@ -284,35 +284,34 @@ typedef struct {
     char expire[20];
 } Item;
 // Function prototypes
-int readCSV(const char *filename, Item items[], int *rowCount);
-void writeCSV(const char *filename, Item items[], int rowCount);
+int readProduct(const char *filename, Item items[], int *rowCount);
+void writeProduct(const char *filename, Item items[], int rowCount);
 
 int main() {
-   // mainMenu();
-    // return 0;
+   mainMenu();
+    return 0;
     Item items[MAX_ROWS];
     int rowCount = 0;
 
     // Read the CSV file
-    if (!readCSV("Product.csv", items, &rowCount)) {
+    if (!readProduct("Product.csv", items, &rowCount)) {
         printf("Error reading the file.\n");
         return EXIT_FAILURE;
     }
 
-    // Update the quantity of N1 to 20
     for (int i = 0; i < rowCount; i++) {
         if (strcmp(items[i].id, "N1") == 0) {
-            items[i].quantity = 20;
+            items[i].quantity = 40;
         }
     }
 
     // Overwrite the original file with the updated content
-    writeCSV("Product.csv", items, rowCount);
+    writeProduct("Product.csv", items, rowCount);
 
-    printf("The quantity of N1 has been updated to 20 in cpe100.csv\n");
+    printf("the data have update to Product.csv\n");
     return EXIT_SUCCESS;
 }
-int readCSV(const char *filename, Item items[], int *rowCount) {
+int readProduct(const char *filename, Item items[], int *rowCount) {
     FILE *file = fopen(filename, "r");
     if (!file) {
         perror("Error opening file");
@@ -346,7 +345,7 @@ int readCSV(const char *filename, Item items[], int *rowCount) {
 }
 
 // Function to overwrite the CSV file with updated data
-void writeCSV(const char *filename, Item items[], int rowCount) {
+void writeProduct(const char *filename, Item items[], int rowCount) {
     FILE *file = fopen(filename, "w");
     if (!file) {
         perror("Error opening file");
