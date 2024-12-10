@@ -30,6 +30,17 @@ typedef struct {
     int minSpend;
 } DiscountCoupon;
 
+typedef struct {
+    char id[20];
+    char name[50];
+    int quantity;
+    char unit[20];
+    char restock[20];  
+    char expire[20];   
+} Stock;
+
+
+
 int readDiscountCoupons(const char *filename, DiscountCoupon coupons[], int *rowCount) {
     FILE *file = fopen(filename, "r");
     if (!file) {
@@ -316,7 +327,7 @@ void MenuCRUD() {
         }
 }
 
-// View Stock (Stock CRUD Operations
+// View Stock (Stock CRUD Operations)
 
 void ViewStock() {
     typedef struct {
@@ -381,6 +392,49 @@ void ViewStock() {
     getchar();
 }
 
+// Add New Stock Function
+
+void AddNewStock() {
+    Stock newStock;
+    FILE *file = fopen("Stock.csv", "a");
+    if (!file) {
+        perror("Error opening file");
+        return;
+    }
+
+    printf("Enter Stock ID: ");
+    fgets(newStock.id, sizeof(newStock.id), stdin);
+    newStock.id[strcspn(newStock.id, "\n")] = '\0';
+
+    printf("Enter Stock Name: ");
+    fgets(newStock.name, sizeof(newStock.name), stdin);
+    newStock.name[strcspn(newStock.name, "\n")] = '\0';
+
+    printf("Enter Quantity: ");
+    scanf("%d", &newStock.quantity);
+    clearInputBuffer();
+
+    printf("Enter Unit: ");
+    fgets(newStock.unit, sizeof(newStock.unit), stdin);
+    newStock.unit[strcspn(newStock.unit, "\n")] = '\0';
+
+    printf("Enter Restock Date (e.g., 1/1/2025): ");
+    fgets(newStock.restock, sizeof(newStock.restock), stdin);
+    newStock.restock[strcspn(newStock.restock, "\n")] = '\0';
+
+    printf("Enter Expiry Date (e.g., 1/1/2025): ");
+    fgets(newStock.expire, sizeof(newStock.expire), stdin);
+    newStock.expire[strcspn(newStock.expire, "\n")] = '\0';
+
+    fprintf(file, "%s,%s,%d,%s,%s,%s\n", newStock.id, newStock.name, newStock.quantity, newStock.unit, newStock.restock, newStock.expire);
+    fclose(file);
+
+    printf("Stock added successfully!\n");
+    printf("Press Enter to continue...");
+    getchar();
+}
+
+
 // Stock CRUD Operations
 
 void StockCRUD() {
@@ -389,7 +443,7 @@ void StockCRUD() {
     printf("=======================================\n");
     printf("          Stock CRUD Operations\n");
     printf("=======================================\n");
-    printf("1. Create A New Stock Name\n");
+    printf("1. Create A New Stock\n");
     printf("2. View Stock\n");
     printf("3. Edit An Existing Stock\n");
     printf("4. Delete Stock\n");
@@ -400,6 +454,7 @@ void StockCRUD() {
         clearInputBuffer();
         switch (StockCRUDchoice) {
             case 1:
+                AddNewStock();
                 break;
             case 2:
                 ViewStock();
@@ -429,7 +484,7 @@ void CRUDoperationMenu() {
     printf("=======================================\n");
     printf("1. Edit Menu\n");
     printf("2. Edit Stock\n");
-    printf("2. Return to Owner Features\n");
+    printf("3. Return to Owner Features\n");
     printf("=======================================\n");
     printf("Enter your choice: ");
         scanf("%d", &CRUDchoice);
