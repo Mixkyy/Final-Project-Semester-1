@@ -217,6 +217,67 @@ void ManageCouponsMenu() {
         }
 }
 
+// View Menu (Menu CRUD operations
+
+void ViewMenu() {
+    typedef struct {
+        char code[20];
+        char name[100];
+        double price;
+        char description[100];
+    } MenuItem;
+
+    MenuItem menu[MAX_ROWS];
+    int rowCount = 0;
+
+    FILE *file = fopen("Menu.csv", "r");
+    if (!file) {
+        perror("Error opening file");
+        return;
+    }
+
+    char line[MAX_LINE_LENGTH];
+    int isHeader = 1;
+
+    while (fgets(line, sizeof(line), file)) {
+        if (isHeader) {
+            isHeader = 0;
+            continue;
+        }
+
+        sscanf(line, "%[^,],%[^,],%lf,%[^\n]",
+               menu[rowCount].code,
+               menu[rowCount].name,
+               &menu[rowCount].price,
+               menu[rowCount].description);
+
+        rowCount++;
+    }
+
+    fclose(file);
+
+    clearScreen();
+    printf("===============================================================\n");
+    printf("                         MENU\n");
+    printf("===============================================================\n");
+    printf("Code    Name                                             Price     Description\n");
+    printf("---------------------------------------------------------------\n");
+
+    for (int i = 0; i < rowCount; i++) {
+        printf("%-7s%-50s%-10.2f%-30s\n",
+               menu[i].code,
+               menu[i].name,
+               menu[i].price,
+               menu[i].description);
+    }
+
+    printf("===============================================================\n");
+    printf("Press Enter to return to the menu...\n");
+    getchar();
+}
+
+
+
 // Menu CRUD operations
 
 void MenuCRUD() {
@@ -238,6 +299,110 @@ void MenuCRUD() {
             case 1:
                 break;
             case 2:
+                ViewMenu();
+                break;
+            case 3:
+                break;
+            case 4:
+                break;
+            case 5:
+                return;
+                break;
+            default:
+                printf("Invalid choice. Please try again.\n");
+                printf("Press Enter to continue...");
+                getchar();  
+                MenuCRUD();
+        }
+}
+
+// View Stock (Stock CRUD Operations
+
+void ViewStock() {
+    typedef struct {
+        char id[20];
+        char name[100];
+        int quantity;
+        char unit[20];
+        char restock[20];
+        char expire[20];
+    } StockItem;
+
+    StockItem stock[MAX_ROWS];
+    int rowCount = 0;
+
+    FILE *file = fopen("Stock.csv", "r");
+    if (!file) {
+        perror("Error opening file");
+        return;
+    }
+
+    char line[MAX_LINE_LENGTH];
+    int isHeader = 1;
+
+    while (fgets(line, sizeof(line), file)) {
+        if (isHeader) {
+            isHeader = 0;
+            continue;
+        }
+
+        sscanf(line, "%[^,],%[^,],%d,%[^,],%[^,],%[^\n]",
+               stock[rowCount].id,
+               stock[rowCount].name,
+               &stock[rowCount].quantity,
+               stock[rowCount].unit,
+               stock[rowCount].restock,
+               stock[rowCount].expire);
+
+        rowCount++;
+    }
+
+    fclose(file);
+
+    clearScreen();
+    printf("===============================================================\n");
+    printf("                         STOCK\n");
+    printf("===============================================================\n");
+    printf("ID      Name                                        Quantity    Unit    Re-stock Date  Expiry Date\n");
+    printf("---------------------------------------------------------------\n");
+
+    for (int i = 0; i < rowCount; i++) {
+        printf("%-7s%-50s%-12d%-8s%-15s%-15s\n",
+               stock[i].id,
+               stock[i].name,
+               stock[i].quantity,
+               stock[i].unit,
+               stock[i].restock[0] == '\0' ? "N/A" : stock[i].restock,
+               stock[i].expire[0] == '\0' ? "N/A" : stock[i].expire);
+    }
+
+    printf("===============================================================\n");
+    printf("Press Enter to return to the menu...\n");
+    getchar();
+}
+
+// Stock CRUD Operations
+
+void StockCRUD() {
+    int StockCRUDchoice;
+    clearScreen();
+    printf("=======================================\n");
+    printf("          Stock CRUD Operations\n");
+    printf("=======================================\n");
+    printf("1. Create A New Stock Name\n");
+    printf("2. View Stock\n");
+    printf("3. Edit An Existing Stock\n");
+    printf("4. Delete Stock\n");
+    printf("5. Return To Owner Features\n");
+    printf("=======================================\n");
+    printf("Enter your choice: ");
+        scanf("%d", &StockCRUDchoice);
+        clearInputBuffer();
+        switch (StockCRUDchoice) {
+            case 1:
+                break;
+            case 2:
+                ViewStock();
                 break;
             case 3:
                 break;
@@ -274,6 +439,7 @@ void CRUDoperationMenu() {
             MenuCRUD();
                 break;
             case 2:
+            StockCRUD();
                 break;
             case 3:
                 return;
