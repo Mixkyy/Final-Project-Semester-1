@@ -18,6 +18,76 @@ void clearInputBuffer() {
     while (getchar() != '\n');
 }
 
+// View Discount Coupons
+
+#define MAX_ROWS 100
+#define MAX_LINE_LENGTH 256
+
+typedef struct {
+    char code[20];
+    int discount;
+    char condition[50];
+    int minSpend;
+} DiscountCoupon;
+
+int readDiscountCoupons(const char *filename, DiscountCoupon coupons[], int *rowCount) {
+    FILE *file = fopen(filename, "r");
+    if (!file) {
+        perror("Error opening file");
+        return 0;
+    }
+
+    char line[MAX_LINE_LENGTH];
+    int isHeader = 1;
+    *rowCount = 0;
+
+    while (fgets(line, sizeof(line), file)) {
+        if (isHeader) {
+            isHeader = 0;
+            continue;
+        }
+
+        sscanf(line, "%[^,],%d,%[^,],%d",
+               coupons[*rowCount].code,
+               &coupons[*rowCount].discount,
+               coupons[*rowCount].condition,
+               &coupons[*rowCount].minSpend);
+
+        (*rowCount)++;
+    }
+
+    fclose(file);
+    return 1;
+}
+
+void ViewDiscountCoupon() {
+    DiscountCoupon coupons[MAX_ROWS];
+    int rowCount = 0;
+
+    if (!readDiscountCoupons("Discount.csv", coupons, &rowCount)) {
+        printf("Error reading the file.\n");
+        return;
+    }
+
+    clearScreen();
+    printf("=======================================\n");
+    printf("        AVAILABLE DISCOUNT COUPONS\n");
+    printf("=======================================\n");
+    printf("Code            Discount [%%]      Condition\n");
+    printf("-----------------------------------------------\n");
+
+    for (int i = 0; i < rowCount; i++) {
+        printf("%-15s%-18d%-20s\n",
+               coupons[i].code,
+               coupons[i].discount,
+               coupons[i].condition);
+    }
+
+    printf("=======================================\n");
+    printf("Press Enter to return to the menu...\n");
+    getchar();
+}
+
 // Manage Coupon Menu
 
 void ManageCouponsMenu() {
@@ -36,10 +106,10 @@ void ManageCouponsMenu() {
         clearInputBuffer();
         switch (CouponChoice) {
             case 1:
+                ViewDiscountCoupon();
                 break;
             case 2:
                 break;
-
             case 3:
                 break;
             case 4:
@@ -100,7 +170,7 @@ void ownerMenu() {
         printf("1. View Reports\n");
         printf("2. Perform CRUD Operations\n");
         printf("3. Restock Items\n");
-        printf("4. Manage Discount Coupons\n");
+        printf("4. View Logs\n");
         printf("5. Manage Discount Coupons\n");
         printf("6. Back to Main Menu\n");
         printf("---------------------------------------\n");
