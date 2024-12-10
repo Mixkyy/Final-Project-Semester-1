@@ -88,6 +88,99 @@ void ViewDiscountCoupon() {
     getchar();
 }
 
+// Create Discount Coupon
+
+void CreateCoupon() {
+    DiscountCoupon newCoupon;
+    FILE *file = fopen("Discount.csv", "a");  // Open the file in append mode
+    if (!file) {
+        perror("Error opening file");
+        return;
+    }
+
+    printf("Enter Coupon Code: ");
+    fgets(newCoupon.code, sizeof(newCoupon.code), stdin);
+    newCoupon.code[strcspn(newCoupon.code, "\n")] = '\0';  // Remove newline character
+
+    printf("Enter Discount Percentage: ");
+    scanf("%d", &newCoupon.discount);
+    clearInputBuffer();  // Clear the input buffer after scanf
+
+    printf("Enter Condition: ");
+    fgets(newCoupon.condition, sizeof(newCoupon.condition), stdin);
+    newCoupon.condition[strcspn(newCoupon.condition, "\n")] = '\0';  // Remove newline
+
+    printf("Enter Minimum Spend: ");
+    scanf("%d", &newCoupon.minSpend);
+    clearInputBuffer();
+
+    // Write new coupon to the file, with a newline after the entry
+    fprintf(file, "%s,%d,%s,%d\n", newCoupon.code, newCoupon.discount, newCoupon.condition, newCoupon.minSpend);
+    fclose(file);
+
+    printf("Coupon created successfully!\n");
+    printf("Press Enter to continue...");
+    getchar();  // Wait for the user to press Enter
+}
+
+// Remove Discount Coupons
+
+void DeleteCoupon() {
+    DiscountCoupon coupons[MAX_ROWS];
+    int rowCount = 0;
+
+    if (!readDiscountCoupons("Discount.csv", coupons, &rowCount)) {
+        printf("Error reading the file.\n");
+        return;
+    }
+
+    char couponCode[20];
+    int found = 0;
+
+    printf("Enter the coupon code to delete: ");
+    fgets(couponCode, sizeof(couponCode), stdin);
+    couponCode[strcspn(couponCode, "\n")] = '\0';
+
+    for (int i = 0; i < rowCount; i++) {
+        if (strcmp(coupons[i].code, couponCode) == 0) {
+            for (int j = i; j < rowCount - 1; j++) {
+                coupons[j] = coupons[j + 1];
+            }
+            rowCount--;
+            found = 1;
+            break;
+        }
+    }
+
+    if (found) {
+        FILE *file = fopen("Discount.csv", "w");
+        if (!file) {
+            perror("Error opening file");
+            return;
+        }
+
+        fprintf(file, "Code,Discount,Condition,MinSpend\n");
+
+        for (int i = 0; i < rowCount; i++) {
+            fprintf(file, "%s,%d,%s,%d\n",
+                    coupons[i].code,
+                    coupons[i].discount,
+                    coupons[i].condition,
+                    coupons[i].minSpend);
+        }
+
+        fclose(file);
+        printf("Coupon deleted successfully!\n");
+    } else {
+        printf("Coupon not found.\n");
+    }
+
+    printf("Press Enter to continue...");
+    getchar();
+}
+
+
+
 // Manage Coupon Menu
 
 void ManageCouponsMenu() {
@@ -99,7 +192,7 @@ void ManageCouponsMenu() {
     printf("1. View Discount Coupons\n");
     printf("2. Create A Coupon\n");
     printf("3. Delete A Coupon\n");
-    printf("3. Return to Owner Features\n");
+    printf("4. Return to Owner Features\n");
     printf("=======================================\n");
     printf("Enter your choice: ");
         scanf("%d", &CouponChoice);
@@ -109,8 +202,10 @@ void ManageCouponsMenu() {
                 ViewDiscountCoupon();
                 break;
             case 2:
+                CreateCoupon();
                 break;
             case 3:
+                DeleteCoupon();
                 break;
             case 4:
                 return;
