@@ -26,8 +26,9 @@ void ManageCouponsMenu() {
     printf("=======================================\n");
     printf("         Manage Discount Coupons\n");
     printf("=======================================\n");
-    printf("1. Create A Coupon\n");
-    printf("2. Delete A Coupon\n");
+    printf("1. View Discount Coupons\n");
+    printf("2. Create A Coupon\n");
+    printf("3. Delete A Coupon\n");
     printf("3. Return to Owner Features\n");
     printf("=======================================\n");
     printf("Enter your choice: ");
@@ -38,7 +39,10 @@ void ManageCouponsMenu() {
                 break;
             case 2:
                 break;
+
             case 3:
+                break;
+            case 4:
                 return;
             default:
                 printf("Invalid choice. Please try again.\n");
@@ -97,7 +101,8 @@ void ownerMenu() {
         printf("2. Perform CRUD Operations\n");
         printf("3. Restock Items\n");
         printf("4. Manage Discount Coupons\n");
-        printf("5. Back to Main Menu\n");
+        printf("5. Manage Discount Coupons\n");
+        printf("6. Back to Main Menu\n");
         printf("---------------------------------------\n");
         printf("Enter your choice: ");
         scanf("%d", &ownerChoice);
@@ -112,9 +117,11 @@ void ownerMenu() {
             case 3:
                 break;
             case 4:
-                ManageCouponsMenu();
                 break;
             case 5:
+                ManageCouponsMenu();
+                break;
+            case 6:
                 return;
             default:
                 printf("Invalid choice. Please try again.\n");
