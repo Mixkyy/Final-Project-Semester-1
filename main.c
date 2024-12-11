@@ -302,7 +302,7 @@ int main() {
     // Update the quantity of N1 to 20
     for (int i = 0; i < rowCount; i++) {
         if (strcmp(items[i].id, "N1") == 0) {
-            items[i].quantity = 20;
+            items[i].quantity = items[i].quantity-15;
         }
     }
 
