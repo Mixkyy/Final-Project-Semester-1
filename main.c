@@ -347,6 +347,51 @@ void ManageCouponsMenu() {
         }
 }
 
+// Create New Menu Item
+
+void CreateNewMenuItem() {
+    char filename[] = "Menu.csv";
+    FILE *file = fopen(filename, "a");  // Open file in append mode
+    if (!file) {
+        perror("Error opening file");
+        return;
+    }
+
+    char code[10];
+    char name[50];
+    int price;
+    char description[100];
+
+    printf("=======================================\n");
+    printf("          Add New Menu Item\n");
+    printf("=======================================\n");
+
+    // Input new menu item details
+    printf("Enter Menu Code (numeric): ");
+    fgets(code, sizeof(code), stdin);
+    code[strcspn(code, "\n")] = '\0';  // Remove newline character
+
+    printf("Enter Menu Name: ");
+    fgets(name, sizeof(name), stdin);
+    name[strcspn(name, "\n")] = '\0';  // Remove newline character
+
+    printf("Enter Price: ");
+    scanf("%d", &price);
+    clearInputBuffer();  // Clear input buffer after scanf
+
+    printf("Enter Description: ");
+    fgets(description, sizeof(description), stdin);
+    description[strcspn(description, "\n")] = '\0';  // Remove newline character
+
+    // Append the new item to the file
+    fprintf(file, "%s,%s,%d,%s\n", code, name, price, description);
+    fclose(file);
+
+    printf("New menu item added successfully!\n");
+    printf("Press Enter to return to the menu...\n");
+    getchar();
+}
+
 // View Menu (Menu CRUD operations)
 
 void ViewMenu() {
@@ -406,6 +451,101 @@ void ViewMenu() {
     getchar();
 }
 
+// Delete Menu Items
+
+void DeleteMenuItem() {
+    typedef struct {
+        char code[20];
+        char name[100];
+        double price;
+        char description[100];
+    } MenuItem;
+
+    MenuItem menu[MAX_ROWS];
+    int rowCount = 0;
+
+    FILE *file = fopen("Menu.csv", "r");
+    if (!file) {
+        perror("Error opening file");
+        return;
+    }
+
+    char line[MAX_LINE_LENGTH];
+    int isHeader = 1;
+
+    while (fgets(line, sizeof(line), file)) {
+        if (isHeader) {
+            isHeader = 0;
+            continue;
+        }
+
+        sscanf(line, "%[^,],%[^,],%lf,%[^\n]",
+               menu[rowCount].code,
+               menu[rowCount].name,
+               &menu[rowCount].price,
+               menu[rowCount].description);
+
+        rowCount++;
+    }
+
+    fclose(file);
+
+    clearScreen();
+    printf("===============================================================\n");
+    printf("                         MENU\n");
+    printf("===============================================================\n");
+    printf("Code    Name                                             Price     Description\n");
+    printf("---------------------------------------------------------------\n");
+
+    for (int i = 0; i < rowCount; i++) {
+        printf("%-7s%-50s%-10.2f%-30s\n",
+               menu[i].code,
+               menu[i].name,
+               menu[i].price,
+               menu[i].description);
+    }
+
+    printf("===============================================================\n");
+    printf("Enter the code of the menu item to delete: ");
+    
+    char codeToDelete[20];
+    fgets(codeToDelete, sizeof(codeToDelete), stdin);
+    codeToDelete[strcspn(codeToDelete, "\n")] = '\0';
+
+    FILE *tempFile = fopen("TempMenu.csv", "w");
+    if (!tempFile) {
+        perror("Error creating temporary file");
+        return;
+    }
+
+    int found = 0;
+    for (int i = 0; i < rowCount; i++) {
+        if (strcmp(menu[i].code, codeToDelete) != 0) {
+            fprintf(tempFile, "%s,%s,%.2f,%s\n",
+                    menu[i].code,
+                    menu[i].name,
+                    menu[i].price,
+                    menu[i].description);
+        } else {
+            found = 1;
+        }
+    }
+
+    fclose(tempFile);
+
+    if (found) {
+        remove("Menu.csv");
+        rename("TempMenu.csv", "Menu.csv");
+        printf("Menu item with code '%s' deleted successfully!\n", codeToDelete);
+    } else {
+        remove("TempMenu.csv");
+        printf("Menu item with code '%s' not found.\n", codeToDelete);
+    }
+
+    printf("Press Enter to return to the menu...\n");
+    getchar();
+}
+
 
 
 // Menu CRUD operations
@@ -427,13 +567,18 @@ void MenuCRUD() {
         clearInputBuffer();
         switch (MenuCRUDchoice) {
             case 1:
+                CreateNewMenuItem();
+                MenuCRUD();
                 break;
             case 2:
                 ViewMenu();
+                MenuCRUD();
                 break;
             case 3:
                 break;
             case 4:
+                DeleteMenuItem();
+                MenuCRUD();
                 break;
             case 5:
                 return;
