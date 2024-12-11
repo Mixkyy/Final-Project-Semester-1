@@ -89,6 +89,99 @@ int readDiscountCoupons(const char *filename, DiscountCoupon coupons[], int *row
     return 1;
 }
 
+// Edit Coupon Function
+
+void EditCoupon() {
+    DiscountCoupon coupons[MAX_ROWS];
+    int rowCount = 0;
+
+    // Read existing coupons from file
+    if (!readDiscountCoupons("Discount.csv", coupons, &rowCount)) {
+        printf("Error reading the file.\n");
+        return;
+    }
+
+    // Display available coupons
+    clearScreen();
+    printf("=======================================\n");
+    printf("         Edit Discount Coupons\n");
+    printf("=======================================\n");
+    printf("Available Coupons:\n");
+    printf("Code            Discount [%%]      Condition                 Min Spend\n");
+    printf("--------------------------------------------------------------------------\n");
+    for (int i = 0; i < rowCount; i++) {
+        printf("%-15s%-18d%-30s%d\n",
+               coupons[i].code,
+               coupons[i].discount,
+               coupons[i].condition,
+               coupons[i].minSpend);
+    }
+
+    // Prompt user to enter the coupon code to edit
+    char couponCode[20];
+    printf("\nEnter the coupon code to edit: ");
+    fgets(couponCode, sizeof(couponCode), stdin);
+    couponCode[strcspn(couponCode, "\n")] = '\0'; // Remove newline character
+
+    // Find the coupon in the list
+    int foundIndex = -1;
+    for (int i = 0; i < rowCount; i++) {
+        if (strcmp(coupons[i].code, couponCode) == 0) {
+            foundIndex = i;
+            break;
+        }
+    }
+
+    if (foundIndex == -1) {
+        printf("Coupon not found.\n");
+        printf("Press Enter to return to the menu...\n");
+        getchar();
+        return;
+    }
+
+    // Edit the selected coupon
+    printf("\nEditing Coupon: %s\n", couponCode);
+    printf("Enter new coupon code (current: %s): ", coupons[foundIndex].code);
+    fgets(coupons[foundIndex].code, sizeof(coupons[foundIndex].code), stdin);
+    coupons[foundIndex].code[strcspn(coupons[foundIndex].code, "\n")] = '\0';
+
+    printf("Enter new discount percentage (current: %d): ", coupons[foundIndex].discount);
+    scanf("%d", &coupons[foundIndex].discount);
+    clearInputBuffer();
+
+    printf("Enter new condition (current: %s): ", coupons[foundIndex].condition);
+    fgets(coupons[foundIndex].condition, sizeof(coupons[foundIndex].condition), stdin);
+    coupons[foundIndex].condition[strcspn(coupons[foundIndex].condition, "\n")] = '\0';
+
+    printf("Enter new minimum spend (current: %d): ", coupons[foundIndex].minSpend);
+    scanf("%d", &coupons[foundIndex].minSpend);
+    clearInputBuffer();
+
+    // Write the updated coupons back to the file
+    FILE *file = fopen("Discount.csv", "w");
+    if (!file) {
+        perror("Error opening file");
+        return;
+    }
+
+    fprintf(file, "Code,Discount,Condition,MinSpend\n");
+    for (int i = 0; i < rowCount; i++) {
+        fprintf(file, "%s,%d,%s,%d\n",
+                coupons[i].code,
+                coupons[i].discount,
+                coupons[i].condition,
+                coupons[i].minSpend);
+    }
+
+    fclose(file);
+    printf("Coupon updated successfully!\n");
+    printf("Press Enter to return to the menu...\n");
+    getchar();
+}
+
+
+// View Discount Coupon Function
+
 void ViewDiscountCoupon() {
     DiscountCoupon coupons[MAX_ROWS];
     int rowCount = 0;
@@ -139,7 +232,7 @@ void CreateCoupon() {
     fgets(newCoupon.condition, sizeof(newCoupon.condition), stdin);
     newCoupon.condition[strcspn(newCoupon.condition, "\n")] = '\0';  // Remove newline
 
-    printf("Enter Minimum Spend: ");
+    printf("Enter Minimum Spend (If there is no condition, enter 0): ");
     scanf("%d", &newCoupon.minSpend);
     clearInputBuffer();
 
@@ -221,7 +314,8 @@ void ManageCouponsMenu() {
     printf("1. View Discount Coupons\n");
     printf("2. Create A Coupon\n");
     printf("3. Delete A Coupon\n");
-    printf("4. Return to Owner Features\n");
+    printf("4. Edit A Coupon\n");
+    printf("5. Return to Owner Features\n");
     printf("=======================================\n");
     printf("Enter your choice: ");
         scanf("%d", &CouponChoice);
@@ -229,14 +323,21 @@ void ManageCouponsMenu() {
         switch (CouponChoice) {
             case 1:
                 ViewDiscountCoupon();
+                ManageCouponsMenu();
                 break;
             case 2:
                 CreateCoupon();
+                ManageCouponsMenu();
                 break;
             case 3:
                 DeleteCoupon();
+                ManageCouponsMenu();
                 break;
             case 4:
+                EditCoupon();
+                ManageCouponsMenu();
+                break;
+            case 5:
                 return;
             default:
                 printf("Invalid choice. Please try again.\n");
