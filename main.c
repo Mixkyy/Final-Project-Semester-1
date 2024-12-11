@@ -139,7 +139,7 @@ void CreateCoupon() {
     fgets(newCoupon.condition, sizeof(newCoupon.condition), stdin);
     newCoupon.condition[strcspn(newCoupon.condition, "\n")] = '\0';  // Remove newline
 
-    printf("Enter Minimum Spend: ");
+    printf("Enter Minimum Spend (If there is no condition, enter 0): ");
     scanf("%d", &newCoupon.minSpend);
     clearInputBuffer();
 
@@ -229,12 +229,15 @@ void ManageCouponsMenu() {
         switch (CouponChoice) {
             case 1:
                 ViewDiscountCoupon();
+                ManageCouponsMenu();
                 break;
             case 2:
                 CreateCoupon();
+                ManageCouponsMenu();
                 break;
             case 3:
                 DeleteCoupon();
+                ManageCouponsMenu();
                 break;
             case 4:
                 return;
