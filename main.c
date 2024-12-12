@@ -1405,6 +1405,17 @@ typedef struct {
     int minSpend;            // Minimum spend required
 } Discount;
 
+typedef struct {
+    char name[50];
+    char ingredientName[50];
+    int amountPerUnit; // Amount of the ingredient needed per unit of menu
+} MenuIngredient;
+
+#define MAX_MENU_ITEMS 100
+MenuIngredient menuIngredients[MAX_MENU_ITEMS];
+int menuItemCount = 0;
+
+
 #define MAX_DISCOUNTS 10
 
 // Maximum cart size
@@ -1417,9 +1428,186 @@ int cartSize = 0;
 Discount discounts[MAX_DISCOUNTS];
 int discountCount = 10;
 
-void CutStocks(){
-    
+typedef struct {
+    char id[10];          // Unique identifier
+    char name[50];        // Ingredient name
+    int quantity;         // Quantity available
+    char unit[10];        // Unit of measurement
+    char restockDate[11]; // Restock date
+    char expireDate[11];  // Expiration date
+} StockItem;
+
+#define MAX_STOCKS 100
+StockItem stocks[MAX_STOCKS];
+int stockCount = 0;
+
+// Function to compare dates (returns -1 if date1 < date2, 1 if date1 > date2, 0 if equal)
+int compareDates(const char* date1, const char* date2) {
+    return strcmp(date1, date2);
 }
+
+// Function to load stock data from the CSV file
+void loadStockFromCSV(const char* Stock) {
+    FILE* file = fopen("Stock.csv", "r");
+    if (file == NULL) {
+        perror("Error opening stock file");
+        exit(EXIT_FAILURE);
+    }
+
+    char line[512];
+    fgets(line, sizeof(line), file); // Skip header
+
+    while (fgets(line, sizeof(line), file)) {
+        if (stockCount >= MAX_STOCKS) {
+            printf("Stock capacity exceeded!\n");
+            break;
+        }
+
+        char* token = strtok(line, ",");
+        strncpy(stocks[stockCount].id, token, sizeof(stocks[stockCount].id) - 1);
+
+        token = strtok(NULL, ",");
+        strncpy(stocks[stockCount].name, token, sizeof(stocks[stockCount].name) - 1);
+
+        token = strtok(NULL, ",");
+        stocks[stockCount].quantity = atoi(token);
+
+        token = strtok(NULL, ",");
+        strncpy(stocks[stockCount].unit, token, sizeof(stocks[stockCount].unit) - 1);
+
+        token = strtok(NULL, ",");
+        strncpy(stocks[stockCount].restockDate, token, sizeof(stocks[stockCount].restockDate) - 1);
+
+        token = strtok(NULL, ",");
+        strncpy(stocks[stockCount].expireDate, token, sizeof(stocks[stockCount].expireDate) - 1);
+
+        stockCount++;
+    }
+
+    fclose(file);
+}
+
+// Deduct stock based on ingredient requirements
+void deductStock(const char* ingredient, int requiredQuantity) {
+    for (int i = 0; i < stockCount; i++) {
+        if (strcmp(stocks[i].name, ingredient) == 0) {
+            for (int j = 0; j < stockCount; j++) {
+                // Find the stock item with the nearest expiration date
+                if (strcmp(stocks[j].name, ingredient) == 0 && stocks[j].quantity > 0) {
+                    if (compareDates(stocks[j].expireDate, stocks[i].expireDate) < 0) {
+                        StockItem temp = stocks[i];
+                        stocks[i] = stocks[j];
+                        stocks[j] = temp;
+                    }
+                }
+            }
+
+            // Deduct the stock
+            if (stocks[i].quantity >= requiredQuantity) {
+                stocks[i].quantity -= requiredQuantity;
+                requiredQuantity = 0;
+            } else {
+                requiredQuantity -= stocks[i].quantity;
+                stocks[i].quantity = 0;
+            }
+
+            if (requiredQuantity == 0) break;
+        }
+    }
+
+    if (requiredQuantity > 0) {
+        printf("Warning: Not enough %s in stock!\n", ingredient);
+    }
+}
+// Save updated stock back to the file
+void saveStockToCSV(const char* Stock) {
+    // Open the file in write mode, which overwrites the existing content
+    FILE* file = fopen("Stock.csv", "w");
+    if (file == NULL) {
+        perror("Error saving stock file");
+        return;
+    }
+
+    // Write the header to the CSV file
+    fprintf(file, "id,name,quantity,unit,restock,expire\n");
+
+    // Write each stock item's details
+    for (int i = 0; i < stockCount; i++) {
+        fprintf(file, "%s,%s,%d,%s,%s,%s\n",
+                stocks[i].id,
+                stocks[i].name,
+                stocks[i].quantity,
+                stocks[i].unit,
+                stocks[i].restockDate,
+                stocks[i].expireDate);
+    }
+
+    fclose(file); // Close the file to ensure data is written
+}
+
+void loadMenuRequirementsFromCSV(const char* Ingredient) {
+    FILE* file = fopen("Ingredient.csv", "r");
+    if (file == NULL) {
+        perror("Error opening menu CSV file");
+        return;
+    }
+
+    char line[512];
+    menuItemCount = 0;
+
+    // Skip the first line (header)
+    fgets(line, sizeof(line), file);
+
+    while (fgets(line, sizeof(line), file)) {
+        if (menuItemCount >= MAX_MENU_ITEMS) {
+            printf("Menu capacity exceeded!\n");
+            break;
+        }
+
+        // Parse the CSV line
+        char* token = strtok(line, ",");
+        if (token == NULL) continue;
+
+        // Read menu name
+        strncpy(menuIngredients[menuItemCount].name, token, sizeof(menuIngredients[menuItemCount].name) - 1);
+
+        // Iterate over ingredients in the row
+        while ((token = strtok(NULL, ",")) != NULL) {
+            if (strcmp(token, "") != 0) {
+                strncpy(menuIngredients[menuItemCount].ingredientName, token, sizeof(menuIngredients[menuItemCount].ingredientName) - 1);
+
+                // Get the amount needed per unit
+                token = strtok(NULL, ",");
+                if (token != NULL) {
+                    menuIngredients[menuItemCount].amountPerUnit = atoi(token);
+                }
+                menuItemCount++;
+            }
+        }
+    }
+
+    fclose(file);
+}
+
+
+void CutStocks() {
+    for (int i = 0; i < cartSize; i++) {
+        CartItem* item = &cart[i];
+
+        // Find the matching menu item in the menuIngredients array
+        for (int j = 0; j < menuItemCount; j++) {
+            if (strcmp(item->name, menuIngredients[j].name) == 0) {
+                // Deduct the required stock
+                deductStock(menuIngredients[j].ingredientName, menuIngredients[j].amountPerUnit * item->quantity);
+            }
+        }
+    }
+
+    // Save the updated stock to file
+    saveStockToCSV("Stock.csv");
+}
+
+
 
 void loadDiscountsFromCSV(const char* Discount) {
     FILE* file = fopen("Discount.csv", "r");
@@ -1466,15 +1654,6 @@ void loadDiscountsFromCSV(const char* Discount) {
 
     fclose(file);
 }
-
-void debugPrintDiscounts() {
-    printf("Loaded Discounts:\n");
-    for (int i = 0; i < discountCount; i++) {
-        printf("Code: %s, Discount: %d%%, Min Spend: %d Baht\n",
-               discounts[i].code, discounts[i].discountPercent, discounts[i].minSpend);
-    }
-}
-
 
 int applyDiscount(int totalCost) {
     int discountAmount = 0;
@@ -1556,7 +1735,7 @@ void purchase() {
         if (!discountApplied) {
             printf("Invalid discount code or no discount applied.\n");
         }
-    } else {debugPrintDiscounts();}
+    }
 
     // Confirm purchase
     printf("\nTotal cost after discount: %d Baht\n", totalCost);
@@ -1572,6 +1751,8 @@ void purchase() {
     if (choice == 1) {
         printf("Processing your payment...\n");
         printf("Transaction successful! Thank you for your purchase.\n");
+        loadStockFromCSV("Stock");
+        loadMenuRequirementsFromCSV("Ingredient");
         CutStocks();
         // Clear the cart after purchase
         cartSize = 0;
