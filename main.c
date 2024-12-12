@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 // Function to clear the terminal
 
@@ -88,6 +89,99 @@ int readDiscountCoupons(const char *filename, DiscountCoupon coupons[], int *row
     fclose(file);
     return 1;
 }
+
+// Edit Coupon Function
+
+void EditCoupon() {
+    DiscountCoupon coupons[MAX_ROWS];
+    int rowCount = 0;
+
+    // Read existing coupons from file
+    if (!readDiscountCoupons("Discount.csv", coupons, &rowCount)) {
+        printf("Error reading the file.\n");
+        return;
+    }
+
+    // Display available coupons
+    clearScreen();
+    printf("=======================================\n");
+    printf("         Edit Discount Coupons\n");
+    printf("=======================================\n");
+    printf("Available Coupons:\n");
+    printf("Code            Discount [%%]      Condition                 Min Spend\n");
+    printf("--------------------------------------------------------------------------\n");
+    for (int i = 0; i < rowCount; i++) {
+        printf("%-15s%-18d%-30s%d\n",
+               coupons[i].code,
+               coupons[i].discount,
+               coupons[i].condition,
+               coupons[i].minSpend);
+    }
+
+    // Prompt user to enter the coupon code to edit
+    char couponCode[20];
+    printf("\nEnter the coupon code to edit: ");
+    fgets(couponCode, sizeof(couponCode), stdin);
+    couponCode[strcspn(couponCode, "\n")] = '\0'; // Remove newline character
+
+    // Find the coupon in the list
+    int foundIndex = -1;
+    for (int i = 0; i < rowCount; i++) {
+        if (strcmp(coupons[i].code, couponCode) == 0) {
+            foundIndex = i;
+            break;
+        }
+    }
+
+    if (foundIndex == -1) {
+        printf("Coupon not found.\n");
+        printf("Press Enter to return to the menu...\n");
+        getchar();
+        return;
+    }
+
+    // Edit the selected coupon
+    printf("\nEditing Coupon: %s\n", couponCode);
+    printf("Enter new coupon code (current: %s): ", coupons[foundIndex].code);
+    fgets(coupons[foundIndex].code, sizeof(coupons[foundIndex].code), stdin);
+    coupons[foundIndex].code[strcspn(coupons[foundIndex].code, "\n")] = '\0';
+
+    printf("Enter new discount percentage (current: %d): ", coupons[foundIndex].discount);
+    scanf("%d", &coupons[foundIndex].discount);
+    clearInputBuffer();
+
+    printf("Enter new condition (current: %s): ", coupons[foundIndex].condition);
+    fgets(coupons[foundIndex].condition, sizeof(coupons[foundIndex].condition), stdin);
+    coupons[foundIndex].condition[strcspn(coupons[foundIndex].condition, "\n")] = '\0';
+
+    printf("Enter new minimum spend (current: %d): ", coupons[foundIndex].minSpend);
+    scanf("%d", &coupons[foundIndex].minSpend);
+    clearInputBuffer();
+
+    // Write the updated coupons back to the file
+    FILE *file = fopen("Discount.csv", "w");
+    if (!file) {
+        perror("Error opening file");
+        return;
+    }
+
+    fprintf(file, "Code,Discount,Condition,MinSpend\n");
+    for (int i = 0; i < rowCount; i++) {
+        fprintf(file, "%s,%d,%s,%d\n",
+                coupons[i].code,
+                coupons[i].discount,
+                coupons[i].condition,
+                coupons[i].minSpend);
+    }
+
+    fclose(file);
+    printf("Coupon updated successfully!\n");
+    printf("Press Enter to return to the menu...\n");
+    getchar();
+}
+
+
+// View Discount Coupon Function
 
 void ViewDiscountCoupon() {
     DiscountCoupon coupons[MAX_ROWS];
@@ -221,7 +315,8 @@ void ManageCouponsMenu() {
     printf("1. View Discount Coupons\n");
     printf("2. Create A Coupon\n");
     printf("3. Delete A Coupon\n");
-    printf("4. Return to Owner Features\n");
+    printf("4. Edit A Coupon\n");
+    printf("5. Return to Owner Features\n");
     printf("=======================================\n");
     printf("Enter your choice: ");
         scanf("%d", &CouponChoice);
@@ -240,6 +335,10 @@ void ManageCouponsMenu() {
                 ManageCouponsMenu();
                 break;
             case 4:
+                EditCoupon();
+                ManageCouponsMenu();
+                break;
+            case 5:
                 return;
             default:
                 printf("Invalid choice. Please try again.\n");
@@ -247,6 +346,51 @@ void ManageCouponsMenu() {
                 getchar();  
                 return;
         }
+}
+
+// Create New Menu Item
+
+void CreateNewMenuItem() {
+    char filename[] = "Menu.csv";
+    FILE *file = fopen(filename, "a");  // Open file in append mode
+    if (!file) {
+        perror("Error opening file");
+        return;
+    }
+
+    char code[10];
+    char name[50];
+    int price;
+    char description[100];
+
+    printf("=======================================\n");
+    printf("          Add New Menu Item\n");
+    printf("=======================================\n");
+
+    // Input new menu item details
+    printf("Enter Menu Code (numeric): ");
+    fgets(code, sizeof(code), stdin);
+    code[strcspn(code, "\n")] = '\0';  // Remove newline character
+
+    printf("Enter Menu Name: ");
+    fgets(name, sizeof(name), stdin);
+    name[strcspn(name, "\n")] = '\0';  // Remove newline character
+
+    printf("Enter Price: ");
+    scanf("%d", &price);
+    clearInputBuffer();  // Clear input buffer after scanf
+
+    printf("Enter Description: ");
+    fgets(description, sizeof(description), stdin);
+    description[strcspn(description, "\n")] = '\0';  // Remove newline character
+
+    // Append the new item to the file
+    fprintf(file, "%s,%s,%d,%s\n", code, name, price, description);
+    fclose(file);
+
+    printf("New menu item added successfully!\n");
+    printf("Press Enter to return to the menu...\n");
+    getchar();
 }
 
 // View Menu (Menu CRUD operations)
@@ -308,6 +452,220 @@ void ViewMenu() {
     getchar();
 }
 
+// Edit Menu Items
+
+void EditMenuItem() {
+    typedef struct {
+        char code[20];
+        char name[100];
+        double price;
+        char description[100];
+    } MenuItem;
+
+    MenuItem menu[MAX_ROWS];
+    int rowCount = 0;
+
+    // Read existing menu items from file
+    FILE *file = fopen("Menu.csv", "r");
+    if (!file) {
+        perror("Error opening file");
+        return;
+    }
+
+    char line[MAX_LINE_LENGTH];
+    int isHeader = 1;
+
+    while (fgets(line, sizeof(line), file)) {
+        if (isHeader) {
+            isHeader = 0;
+            continue;
+        }
+
+        sscanf(line, "%[^,],%[^,],%lf,%[^\n]",
+               menu[rowCount].code,
+               menu[rowCount].name,
+               &menu[rowCount].price,
+               menu[rowCount].description);
+
+        rowCount++;
+    }
+
+    fclose(file);
+
+    // Display available menu items
+    clearScreen();
+    printf("=======================================\n");
+    printf("            Edit Menu Items\n");
+    printf("=======================================\n");
+    printf("Available Menu Items:\n");
+    printf("Code            Name                                      Price     Description\n");
+    printf("-------------------------------------------------------------------------\n");
+    for (int i = 0; i < rowCount; i++) {
+        printf("%-15s%-40s%-10.2f%-30s\n",
+               menu[i].code,
+               menu[i].name,
+               menu[i].price,
+               menu[i].description);
+    }
+
+    // Prompt user to enter the menu item code to edit
+    char itemCode[20];
+    printf("\nEnter the menu item code to edit: ");
+    fgets(itemCode, sizeof(itemCode), stdin);
+    itemCode[strcspn(itemCode, "\n")] = '\0'; // Remove newline character
+
+    // Find the menu item in the list
+    int foundIndex = -1;
+    for (int i = 0; i < rowCount; i++) {
+        if (strcmp(menu[i].code, itemCode) == 0) {
+            foundIndex = i;
+            break;
+        }
+    }
+
+    if (foundIndex == -1) {
+        printf("Menu item not found.\n");
+        printf("Press Enter to return to the menu...\n");
+        getchar();
+        return;
+    }
+
+    // Editing a menu item
+    printf("\nEditing Menu Item: %s\n", itemCode);
+    printf("Enter new name (current: %s): ", menu[foundIndex].name);
+    fgets(menu[foundIndex].name, sizeof(menu[foundIndex].name), stdin);
+    menu[foundIndex].name[strcspn(menu[foundIndex].name, "\n")] = '\0';
+
+    printf("Enter new price (current: %.2f): ", menu[foundIndex].price);
+    scanf("%lf", &menu[foundIndex].price);
+    clearInputBuffer();
+
+    printf("Enter new description (current: %s): ", menu[foundIndex].description);
+    fgets(menu[foundIndex].description, sizeof(menu[foundIndex].description), stdin);
+    menu[foundIndex].description[strcspn(menu[foundIndex].description, "\n")] = '\0';
+
+    // Write the updated menu items back to the file
+    FILE *tempFile = fopen("TempMenu.csv", "w");
+    if (!tempFile) {
+        perror("Error opening temporary file");
+        return;
+    }
+
+    // Write header
+    fprintf(tempFile, "Code,Name,Price,Description\n");
+    for (int i = 0; i < rowCount; i++) {
+        fprintf(tempFile, "%s,%s,%.2f,%s\n",
+                menu[i].code,
+                menu[i].name,
+                menu[i].price,
+                menu[i].description);
+    }
+
+    fclose(tempFile);
+
+    remove("Menu.csv");
+    rename("TempMenu.csv", "Menu.csv");
+
+    printf("Menu item updated successfully!\n");
+    printf("Press Enter to return to the menu...\n");
+    getchar();
+}
+
+// Delete Menu Items
+
+void DeleteMenuItem() {
+    typedef struct {
+        char code[20];
+        char name[100];
+        double price;
+        char description[100];
+    } MenuItem;
+
+    MenuItem menu[MAX_ROWS];
+    int rowCount = 0;
+
+    FILE *file = fopen("Menu.csv", "r");
+    if (!file) {
+        perror("Error opening file");
+        return;
+    }
+
+    char line[MAX_LINE_LENGTH];
+    int isHeader = 1;
+
+    while (fgets(line, sizeof(line), file)) {
+        if (isHeader) {
+            isHeader = 0;
+            continue;
+        }
+
+        sscanf(line, "%[^,],%[^,],%lf,%[^\n]",
+               menu[rowCount].code,
+               menu[rowCount].name,
+               &menu[rowCount].price,
+               menu[rowCount].description);
+
+        rowCount++;
+    }
+
+    fclose(file);
+
+    clearScreen();
+    printf("===============================================================\n");
+    printf("                         MENU\n");
+    printf("===============================================================\n");
+    printf("Code    Name                                             Price     Description\n");
+    printf("---------------------------------------------------------------\n");
+
+    for (int i = 0; i < rowCount; i++) {
+        printf("%-7s%-50s%-10.2f%-30s\n",
+               menu[i].code,
+               menu[i].name,
+               menu[i].price,
+               menu[i].description);
+    }
+
+    printf("===============================================================\n");
+    printf("Enter the code of the menu item to delete: ");
+    
+    char codeToDelete[20];
+    fgets(codeToDelete, sizeof(codeToDelete), stdin);
+    codeToDelete[strcspn(codeToDelete, "\n")] = '\0';
+
+    FILE *tempFile = fopen("TempMenu.csv", "w");
+    if (!tempFile) {
+        perror("Error creating temporary file");
+        return;
+    }
+
+    int found = 0;
+    for (int i = 0; i < rowCount; i++) {
+        if (strcmp(menu[i].code, codeToDelete) != 0) {
+            fprintf(tempFile, "%s,%s,%.2f,%s\n",
+                    menu[i].code,
+                    menu[i].name,
+                    menu[i].price,
+                    menu[i].description);
+        } else {
+            found = 1;
+        }
+    }
+
+    fclose(tempFile);
+
+    if (found) {
+        remove("Menu.csv");
+        rename("TempMenu.csv", "Menu.csv");
+        printf("Menu item with code '%s' deleted successfully!\n", codeToDelete);
+    } else {
+        remove("TempMenu.csv");
+        printf("Menu item with code '%s' not found.\n", codeToDelete);
+    }
+
+    printf("Press Enter to return to the menu...\n");
+    getchar();
+}
+
 
 
 // Menu CRUD operations
@@ -329,13 +687,20 @@ void MenuCRUD() {
         clearInputBuffer();
         switch (MenuCRUDchoice) {
             case 1:
+                CreateNewMenuItem();
+                MenuCRUD();
                 break;
             case 2:
                 ViewMenu();
+                MenuCRUD();
                 break;
             case 3:
+                EditMenuItem();
+                MenuCRUD();
                 break;
             case 4:
+                DeleteMenuItem();
+                MenuCRUD();
                 break;
             case 5:
                 return;
@@ -447,6 +812,231 @@ void AddNewStock() {
     getchar();
 }
 
+// Deleting a stock function
+
+void DeleteStockItem() {
+    Stock stock[MAX_ROWS];
+    int rowCount = 0;
+
+    FILE *file = fopen("Stock.csv", "r");
+    if (!file) {
+        perror("Error opening file");
+        return;
+    }
+
+    char line[MAX_LINE_LENGTH];
+    int isHeader = 1;
+
+    // Read existing stock items from the file
+    while (fgets(line, sizeof(line), file)) {
+        if (isHeader) {
+            isHeader = 0;
+            continue; // Skip header
+        }
+        
+        sscanf(line, "%[^,],%[^,],%d,%[^,],%[^,],%[^\n]",
+               stock[rowCount].id,
+               stock[rowCount].name,
+               &stock[rowCount].quantity,
+               stock[rowCount].unit,
+               stock[rowCount].restock,
+               stock[rowCount].expire);
+
+        rowCount++;
+    }
+
+    fclose(file);
+
+    // Display available stock items
+    clearScreen();
+    printf("===============================================================\n");
+    printf("                         STOCK ITEMS\n");
+    printf("===============================================================\n");
+    printf("ID    Name                            Quantity   Unit   Restock Date   Expire Date\n");
+    printf("-------------------------------------------------------------------------------\n");
+
+    for (int i = 0; i < rowCount; i++) {
+        printf("%-6s%-30s%-10d%-8s%-15s%-15s\n",
+               stock[i].id,
+               stock[i].name,
+               stock[i].quantity,
+               stock[i].unit,
+               stock[i].restock,
+               stock[i].expire);
+    }
+
+    printf("===============================================================\n");
+    printf("Enter the stock ID to delete: ");
+    
+    char idToDelete[10];
+    fgets(idToDelete, sizeof(idToDelete), stdin);
+    idToDelete[strcspn(idToDelete, "\n")] = '\0'; // Remove newline character
+
+    FILE *tempFile = fopen("TempStock.csv", "w");
+    if (!tempFile) {
+        perror("Error creating temporary file");
+        return;
+    }
+
+    int found = 0;
+    for (int i = 0; i < rowCount; i++) {
+        if (strcmp(stock[i].id, idToDelete) != 0) {
+            fprintf(tempFile, "%s,%s,%d,%s,%s,%s\n",
+                    stock[i].id,
+                    stock[i].name,
+                    stock[i].quantity,
+                    stock[i].unit,
+                    stock[i].restock,
+                    stock[i].expire);
+        } else {
+            found = 1;
+        }
+    }
+
+    fclose(tempFile);
+
+    // If the stock item was found and removed, replace the original file
+    if (found) {
+        remove("Stock.csv");
+        rename("TempStock.csv", "Stock.csv");
+        printf("Stock item with ID '%s' deleted successfully!\n", idToDelete);
+    } else {
+        remove("TempStock.csv");
+        printf("Stock item with ID '%s' not found.\n", idToDelete);
+    }
+
+    printf("Press Enter to return to the menu...\n");
+    getchar();
+}
+
+// Editing a stock
+
+void EditStockItem() {
+    Stock stock[MAX_ROWS];
+    int rowCount = 0;
+
+    // Read existing stock items from file
+    FILE *file = fopen("Stock.csv", "r");
+    if (!file) {
+        perror("Error opening file");
+        return;
+    }
+
+    char line[MAX_LINE_LENGTH];
+    int isHeader = 1;
+
+    while (fgets(line, sizeof(line), file)) {
+        if (isHeader) {
+            isHeader = 0;
+            continue;
+        }
+
+        sscanf(line, "%[^,],%[^,],%d,%[^,],%[^,],%[^\n]",
+               stock[rowCount].id,
+               stock[rowCount].name,
+               &stock[rowCount].quantity,
+               stock[rowCount].unit,
+               stock[rowCount].restock,
+               stock[rowCount].expire);
+
+        rowCount++;
+    }
+
+    fclose(file);
+
+    // Display available stock items
+    clearScreen();
+    printf("=======================================\n");
+    printf("            Edit Stock Items\n");
+    printf("=======================================\n");
+    printf("Available Stock Items:\n");
+    printf("ID     Name                               Quantity   Unit   Restock Date   Expiry Date\n");
+    printf("---------------------------------------------------------------------------------\n");
+
+    for (int i = 0; i < rowCount; i++) {
+        printf("%-6s%-35s%-10d%-8s%-15s%-15s\n",
+               stock[i].id,
+               stock[i].name,
+               stock[i].quantity,
+               stock[i].unit,
+               stock[i].restock,
+               stock[i].expire);
+    }
+
+    // Prompt user to enter the stock ID to edit
+    char stockID[10];
+    printf("\nEnter the stock item ID to edit: ");
+    fgets(stockID, sizeof(stockID), stdin);
+    stockID[strcspn(stockID, "\n")] = '\0'; // Remove newline character
+
+    // Find the stock item in the list
+    int foundIndex = -1;
+    for (int i = 0; i < rowCount; i++) {
+        if (strcmp(stock[i].id, stockID) == 0) {
+            foundIndex = i;
+            break;
+        }
+    }
+
+    if (foundIndex == -1) {
+        printf("Stock item not found.\n");
+        printf("Press Enter to return to the menu...\n");
+        getchar();
+        return;
+    }
+
+    // Editing the stock item
+    printf("\nEditing Stock Item: %s\n", stockID);
+
+    printf("Enter new name (current: %s): ", stock[foundIndex].name);
+    fgets(stock[foundIndex].name, sizeof(stock[foundIndex].name), stdin);
+    stock[foundIndex].name[strcspn(stock[foundIndex].name, "\n")] = '\0';
+
+    printf("Enter new quantity (current: %d): ", stock[foundIndex].quantity);
+    scanf("%d", &stock[foundIndex].quantity);
+    clearInputBuffer();
+
+    printf("Enter new unit (current: %s): ", stock[foundIndex].unit);
+    fgets(stock[foundIndex].unit, sizeof(stock[foundIndex].unit), stdin);
+    stock[foundIndex].unit[strcspn(stock[foundIndex].unit, "\n")] = '\0';
+
+    printf("Enter new restock date (current: %s): ", stock[foundIndex].restock);
+    fgets(stock[foundIndex].restock, sizeof(stock[foundIndex].restock), stdin);
+    stock[foundIndex].restock[strcspn(stock[foundIndex].restock, "\n")] = '\0';
+
+    printf("Enter new expiry date (current: %s): ", stock[foundIndex].expire);
+    fgets(stock[foundIndex].expire, sizeof(stock[foundIndex].expire), stdin);
+    stock[foundIndex].expire[strcspn(stock[foundIndex].expire, "\n")] = '\0';
+
+    // Write the updated stock items back to the file
+    FILE *tempFile = fopen("TempStock.csv", "w");
+    if (!tempFile) {
+        perror("Error opening temporary file");
+        return;
+    }
+
+    // Write header
+    fprintf(tempFile, "id,name,quantity,unit,restock,expire\n");
+    for (int i = 0; i < rowCount; i++) {
+        fprintf(tempFile, "%s,%s,%d,%s,%s,%s\n",
+                stock[i].id,
+                stock[i].name,
+                stock[i].quantity,
+                stock[i].unit,
+                stock[i].restock,
+                stock[i].expire);
+    }
+
+    fclose(tempFile);
+
+    remove("Stock.csv");
+    rename("TempStock.csv", "Stock.csv");
+
+    printf("Stock item updated successfully!\n");
+    printf("Press Enter to return to the menu...\n");
+    getchar();
+}
+
 
 // Stock CRUD Operations
 
@@ -468,13 +1058,19 @@ void StockCRUD() {
         switch (StockCRUDchoice) {
             case 1:
                 AddNewStock();
+                StockCRUD();
                 break;
             case 2:
                 ViewStock();
+                StockCRUD();
                 break;
             case 3:
+                EditStockItem();
+                StockCRUD();
                 break;
             case 4:
+                DeleteStockItem();
+                StockCRUD();
                 break;
             case 5:
                 return;
@@ -803,6 +1399,14 @@ typedef struct {
     int cost;
 } CartItem;
 
+typedef struct {
+    char code[10];           // Discount code
+    int discountPercent;     // Discount percentage
+    int minSpend;            // Minimum spend required
+} Discount;
+
+#define MAX_DISCOUNTS 10
+
 // Maximum cart size
 #define MAX_CART_SIZE 50
 
@@ -810,10 +1414,164 @@ typedef struct {
 CartItem cart[MAX_CART_SIZE];
 int cartSize = 0;
 
-// View purchased items
-void purchase(){
+Discount discounts[MAX_DISCOUNTS];
+int discountCount = 0;
 
+void loadDiscountsFromCSV(const char* Discount) {
+    FILE* file = fopen("Discount.csv", "r");
+    if (file == NULL) {
+        perror("Error opening discount file");
+        exit(EXIT_FAILURE);
+    }
+
+    char line[512];
+    int discountCount = 0;
+
+    // Skip the first line (header)
+    fgets(line, sizeof(line), file);
+
+    while (fgets(line, sizeof(line), file)) {
+        if (discountCount >= MAX_DISCOUNTS) {
+            printf("Discounts capacity exceeded!\n");
+            break;
+        }
+
+        char* token = strtok(line, ",");
+        if (token == NULL) continue;
+
+        // Read the discount code
+        strncpy(discounts[discountCount].code, token, sizeof(discounts[discountCount].code) - 1);
+
+        // Read discount percentage
+        token = strtok(NULL, ",");
+        if (token != NULL) {
+            discounts[discountCount].discountPercent = atoi(token);
+        }
+
+        // Skip the condition column
+        strtok(NULL, ",");
+
+        // Read minimum spend
+        token = strtok(NULL, ",");
+        if (token != NULL) {
+            discounts[discountCount].minSpend = atoi(token);
+        }
+
+        discountCount++;
+    }
+
+    fclose(file);
 }
+
+
+int applyDiscount(int totalCost) {
+    int discountAmount = 0;
+    int appliedDiscount = 0;
+
+    // Automatically apply any applicable discount based on total cost
+    for (int i = 0; i < discountCount; i++) {
+        if (totalCost >= discounts[i].minSpend) {
+            // Apply the discount
+            discountAmount = (totalCost * discounts[i].discountPercent) / 100;
+            appliedDiscount = 1;
+            break; // Apply only the first applicable discount
+        }
+    }
+
+    if (appliedDiscount) {
+        printf("A discount of %d%% has been applied!\n", discounts[0].discountPercent);
+    } else {
+        printf("No discount applied.\n");
+    }
+
+    return discountAmount;
+}
+
+
+
+// View purchased items
+// Function to manually apply a discount
+void purchase() {
+    if (cartSize == 0) {
+        printf("Your cart is empty! Cannot proceed with the purchase.\n");
+        return;
+    }
+
+    // Calculate total cost
+    int totalCost = 0;
+    for (int i = 0; i < cartSize; i++) {
+        totalCost += cart[i].quantity * cart[i].cost;
+    }
+
+    clearScreen();  // Assuming a clearScreen() function exists
+    printf("=======================================\n");
+    printf("           Purchase Summary\n");
+    printf("=======================================\n");
+    for (int i = 0; i < cartSize; i++) {
+        printf("%d. %s x %d - %d Baht\n", i + 1, cart[i].name, cart[i].quantity, cart[i].quantity * cart[i].cost);
+    }
+    printf("---------------------------------------\n");
+    printf("Total cost: %d Baht\n", totalCost);
+
+    // Ask if the user has a discount
+    char discountCode[10];
+    printf("\nDo you have a discount code? (yes/no): ");
+    char answer[4];
+    scanf("%3s", answer);
+    clearInputBuffer();
+
+    int discountApplied = 0;
+    if (strcmp(answer, "yes") == 0) {
+        printf("Enter your discount code: ");
+        scanf("%s", discountCode);
+        clearInputBuffer();
+
+        // Find matching discount code
+        for (int i = 1; i < discountCount; i++) {
+            if (strcmp(discounts[i].code, discountCode) == 0) {
+                // Check if the user meets the minimum spend for this discount
+                if (totalCost >= discounts[i].minSpend) {
+                    int discountAmount = (totalCost * discounts[i].discountPercent) / 100;
+                    totalCost -= discountAmount;
+                    printf("Discount of %d%% applied! You saved %d Baht.\n", discounts[i].discountPercent, discountAmount);
+                    discountApplied = 1;
+                } else {
+                    printf("You do not meet the minimum spend requirement of %d Baht for this discount.\n", discounts[i].minSpend);
+                }
+                break;
+            }
+        }
+
+        if (!discountApplied) {
+            printf("Invalid discount code or no discount applied.\n");
+        }
+    }
+
+    // Confirm purchase
+    printf("\nTotal cost after discount: %d Baht\n", totalCost);
+    printf("Do you want to proceed with the purchase?\n");
+    printf("1. Yes\n");
+    printf("2. No\n");
+    printf("Enter your choice: ");
+    
+    int choice;
+    scanf("%d", &choice);
+    clearInputBuffer();
+
+    if (choice == 1) {
+        printf("Processing your payment...\n");
+        printf("Transaction successful! Thank you for your purchase.\n");
+
+        // Clear the cart after purchase
+        cartSize = 0;
+    } else {
+        printf("Purchase cancelled. Returning to the menu...\n");
+    }
+
+    printf("Press Enter to continue...\n");
+    getchar();  // Wait for user input before returning to the menu
+}
+
 
 void viewcart() {
     int choice;
@@ -836,8 +1594,10 @@ void viewcart() {
     printf("1. Purchase\n");
     printf("2. Back\n");
     printf("Enter your choice : ");
-    scanf("%d",&choice);
+    scanf("%d", &choice);
+    clearInputBuffer();
     if (choice == 1){
+        loadDiscountsFromCSV("Discount.csv");
         purchase();
     }else if(choice == 2){
         return;
@@ -866,38 +1626,94 @@ void addToCart(const char* name, int quantity, int cost) {
     }
 }
 
+#define MAX_MENU_ITEMS 100
+#define MAX_NAME_LEN 100
+#define MAX_DETAIL_LEN 200
 // Menu options and their prices
-const char* menuItems[] = {
-    "Roasted Pork Noodles",
-    "Roasted Pork Noodles with Shrimp Wonton",
-    "Roasted Chicken Noodles with Shrimp Wonton",
-    "Shrimp Noodles with Egg",
-    "Crab Noodles with Shrimp Wonton",
-    "All In One Non-Seafood",
-    "Crispy Pork Noodles with Pork Wonton",
-    "Minced Pork Noodles with Pork Wonton"
-};
+typedef struct {
+    int Code;                     
+    char Name[MAX_NAME_LEN];      
+    int Price;  
+    char Description[MAX_DETAIL_LEN]; 
+} MenuItem;
 
-const char* menudetails[] = {
-    "Noodles / Vegetables / Roasted Pork",
-    "Noodles / Vegetables / Roasted Pork / Shrimp Wonton",
-    "Noodles / Vegetables / Roasted Chicken / Shrimp Wonton",
-    "Noodles / Vegetables / Shrimp / Egg",
-    "Noodles / Vegetables / Crab / Shrimp Wonton",
-    "Noodles / Vegetables / Roasted Pork/ Roasted Chicken / Minced Pork/ Crispy Pork / Shrimp Wonton / Pork Wonton",
-    "Noodles / Vegetables / Crispy Pork / Pork Wonton",
-    "Noodles / Vegetables / Minced Pork / Pork Wanton"
-};
+MenuItem menu[MAX_MENU_ITEMS];
+int menuSize = 0;
 
-const int menuPrices[] = {50, 70, 80, 90, 100, 150, 80, 70};
+void loadMenuFromCSV(const char* Menu) {
+    FILE* file = fopen("Menu.csv", "r");
+    if (file == NULL) {
+        perror("Error opening file");
+        exit(EXIT_FAILURE);
+    }
 
-int searchItem(const char* query) {
-    for (int i = 0; i < 8; i++) {
-        if (strstr(menuItems[i], query) != NULL) {
-            return i; // Return the index of the matching item
+    char line[512];
+    menuSize = 0;
+
+    while (fgets(line, sizeof(line), file)) {
+        if (menuSize >= MAX_MENU_ITEMS) {
+            printf("Menu capacity exceeded!\n");
+            break;
+        }
+
+        char* token = strtok(line, ",");
+        if (token == NULL) continue;
+
+        // อ่านโค้ดเมนู
+        menu[menuSize].Code = atoi(token);
+
+        // อ่านชื่อเมนู
+        token = strtok(NULL, ",");
+        if (token != NULL) {
+            strncpy(menu[menuSize].Name, token, MAX_NAME_LEN);
+            menu[menuSize].Name[MAX_NAME_LEN - 1] = '\0';
+        }
+
+        // อ่านราคาเมนู
+        token = strtok(NULL, ",");
+        if (token != NULL) {
+            menu[menuSize].Price = atoi(token);
+        }
+
+        // อ่านรายละเอียดเมนู
+        token = strtok(NULL, ",");
+        if (token != NULL) {
+            strncpy(menu[menuSize].Description, token, MAX_DETAIL_LEN);
+            menu[menuSize].Description[MAX_DETAIL_LEN - 1] = '\0';
+        }
+
+        menuSize++;
+    }
+
+    fclose(file);
+    for (int i = 0; i < menuSize; i++) {
+        printf("Menu item %d: %s, %d Baht\n", menu[i].Code, menu[i].Name, menu[i].Price);
+    }
+}
+
+// Convert a string to lowercase
+void toLowerCase(const char* src, char* dest) {
+    while (*src) {
+        *dest++ = tolower(*src++);
+    }
+    *dest = '\0';
+}
+
+int searchItem(const char* query, int* results) {
+    char lowerQuery[50];
+    toLowerCase(query, lowerQuery); // แปลง query เป็นพิมพ์เล็ก
+    int count = 0;
+
+    for (int i = 0; i < menuSize; i++) {
+        char lowerMenuItem[MAX_NAME_LEN];
+        toLowerCase(menu[i].Name, lowerMenuItem); // แปลงรายการใน menuItems เป็นพิมพ์เล็ก
+
+        if (strstr(lowerMenuItem, lowerQuery) != NULL) {
+            results[count++] = i; // เก็บดัชนีของเมนูที่ตรงกัน
         }
     }
-    return -1; // Return -1 if no match is found
+
+    return count; // ส่งจำนวนผลลัพธ์ที่พบกลับ
 }
 
 void viewItemDetails(int choice){
@@ -905,10 +1721,10 @@ void viewItemDetails(int choice){
     int quantity;
             clearScreen();
             printf("=======================================\n");
-            printf("    %s\n", menuItems[choice]);
+            printf("    %s\n", menu[choice].Name);
             printf("=======================================\n");
-            printf("%s\n",menudetails[choice-1]);
-            printf("Cost: %d Baht\n", menuPrices[choice]);
+            printf("%s\n", menu[choice].Description);
+            printf("Cost: %d Baht\n", menu[choice].Price);
             printf("1. Add to cart.\n");
             printf("2. Back to available items.\n");
             printf("Enter your choice : ");
@@ -916,12 +1732,13 @@ void viewItemDetails(int choice){
             if(a == 1){
                 printf("Enter the quantity: ");
                 scanf("%d", &quantity);
+                clearInputBuffer();
             }else if(a == 2){
                 return;
             }
-            clearInputBuffer();
-            addToCart(menuItems[choice - 1], quantity, menuPrices[choice]);
-            printf("Added %d x %s to the cart.\n", quantity, menuItems[choice]);
+            
+            addToCart(menu[choice].Name, quantity, menu[choice].Price);
+            printf("Added %d x %s to the cart.\n", quantity, menu[choice].Name);
             printf("Press Enter to continue...");
             getchar();
 }
@@ -934,38 +1751,60 @@ void viewAvailableItems() {
         printf("=======================================\n");
         printf("            Available Items\n");
         printf("=======================================\n");
-        for (int i = 0; i < 8; i++) {
-            printf("%d. %s -- %d Baht\n", i + 1, menuItems[i], menuPrices[i]);
+        for (int i = 1; i < menuSize; i++) {
+            // แสดงข้อมูลเมนู
+            printf("[%d]. %s -- %d Baht\n", menu[i].Code, menu[i].Name, menu[i].Price);
         }
         printf("=======================================\n");
-        printf("9. Search items\n");
-        printf("10. View Cart\n");
+        printf("%d. Search items\n",menuSize+1);
+        printf("%d. View Cart\n",menuSize+2);
         printf("0. Exit\n");
         printf("Enter Your Choice: ");
         scanf("%d", &foodchoice);
         clearInputBuffer();
 
-        if (foodchoice >= 1 && foodchoice <= 8) {
+        if (foodchoice >= 1 && foodchoice <= menuSize) {
             // Item selected
-            viewItemDetails(foodchoice - 1);
-        } else if(foodchoice == 9){
+            viewItemDetails(foodchoice);
+        } else if(foodchoice == menuSize+1){
             clearScreen();
             printf("Enter the item name or keyword to search: ");
             char query[50];
             fgets(query, sizeof(query), stdin);
             query[strcspn(query, "\n")] = 0; // Remove newline character
 
-            int result = searchItem(query);
-            if (result != -1) {
-                printf("Item found: %s\n", menuItems[result]);
+            int results[MAX_MENU_ITEMS];
+            int matches = searchItem(query, results);
+
+            if (matches == 1) {
+                // Only one match found, view details directly
+                printf("Item found: %s\n", menu[results[0]].Name);
                 printf("Press Enter to view details...");
                 getchar();
-                viewItemDetails(result);
+                viewItemDetails(results[0]);
+            } else if (matches > 1) {
+                // Multiple matches found
+                printf("Multiple items found:\n");
+                for (int i = 1; i < matches; i++) {
+                    printf("%d. %s -- %d Baht\n", i + 1, menu[results[i]].Name, menu[results[i]].Price);
+                }
+                printf("Enter the number of the item you want to view: ");
+                int selectedIndex;
+                scanf("%d", &selectedIndex);
+                clearInputBuffer();
+
+                if (selectedIndex >= 1 && selectedIndex <= matches) {
+                    viewItemDetails(results[selectedIndex - 1]);
+                } else {
+                    printf("Invalid choice. Press Enter to return to the menu...");
+                    getchar();
+                }
             } else {
+                // No matches found
                 printf("Item not found. Press Enter to return to the menu...");
                 getchar();
             }
-        } else if (foodchoice == 10) {
+        } else if (foodchoice == menuSize+2) {
             // View cart
             viewcart();
         } else if (foodchoice != 0) {
@@ -1011,11 +1850,11 @@ void customerMenu() {
 
                         switch (productChoice) {
                             case 1:
+                                loadMenuFromCSV("Menu");
                                 viewAvailableItems();
                                 break;
                             case 2:
-                                customerMenu();
-                                break;
+                                return;
                             default:
                                 printf("Invalid choice. Please try again.\n");
                                 printf("Press Enter to continue...");
