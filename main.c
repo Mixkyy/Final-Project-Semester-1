@@ -1415,7 +1415,11 @@ CartItem cart[MAX_CART_SIZE];
 int cartSize = 0;
 
 Discount discounts[MAX_DISCOUNTS];
-int discountCount = 0;
+int discountCount = 10;
+
+void CutStocks(){
+    
+}
 
 void loadDiscountsFromCSV(const char* Discount) {
     FILE* file = fopen("Discount.csv", "r");
@@ -1461,6 +1465,14 @@ void loadDiscountsFromCSV(const char* Discount) {
     }
 
     fclose(file);
+}
+
+void debugPrintDiscounts() {
+    printf("Loaded Discounts:\n");
+    for (int i = 0; i < discountCount; i++) {
+        printf("Code: %s, Discount: %d%%, Min Spend: %d Baht\n",
+               discounts[i].code, discounts[i].discountPercent, discounts[i].minSpend);
+    }
 }
 
 
@@ -1523,11 +1535,10 @@ void purchase() {
     int discountApplied = 0;
     if (strcmp(answer, "yes") == 0) {
         printf("Enter your discount code: ");
-        scanf("%s", discountCode);
-        clearInputBuffer();
+        scanf("%s", &discountCode);
 
         // Find matching discount code
-        for (int i = 1; i < discountCount; i++) {
+        for (int i = 0; i < discountCount; i++) {
             if (strcmp(discounts[i].code, discountCode) == 0) {
                 // Check if the user meets the minimum spend for this discount
                 if (totalCost >= discounts[i].minSpend) {
@@ -1545,7 +1556,7 @@ void purchase() {
         if (!discountApplied) {
             printf("Invalid discount code or no discount applied.\n");
         }
-    }
+    } else {debugPrintDiscounts();}
 
     // Confirm purchase
     printf("\nTotal cost after discount: %d Baht\n", totalCost);
@@ -1561,7 +1572,7 @@ void purchase() {
     if (choice == 1) {
         printf("Processing your payment...\n");
         printf("Transaction successful! Thank you for your purchase.\n");
-
+        CutStocks();
         // Clear the cart after purchase
         cartSize = 0;
     } else {
