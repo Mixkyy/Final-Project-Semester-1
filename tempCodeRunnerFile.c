@@ -1,1 +1,1 @@
-clearScreen();
+sH

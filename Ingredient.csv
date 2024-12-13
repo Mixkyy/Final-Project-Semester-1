@@ -1,4 +1,4 @@
-﻿Name,Noodles,Roasted Pork,Roasted Chicken,Shrimp Wonton,Pork Wonton,Vegetables,Egg,Minced Pork,Crispy Pork,Crab,Shimp
+﻿Name,Noodles,Roasted Pork,Roasted Chicken,Shrimp Wonton,Pork Wonton,Vegetables,Egg,Minced Pork,Crispy Pork,Crab,Shrimp
 Roasted Pork Noodles,75,40,,,,10,,,,,
 Roasted Pork Noodles with Shrimp Wonton,75,40,,3,,10,,,,,
 Roasted Chicken Noodles with Shrimp Wonton,75,,40,3,,10,,,,,
@@ -7,3 +7,5 @@ Crab Noodles with Shrimp Wonton,75,,,3,,10,,,,30,
 All In One Non-Seafood,75,40,40,3,3,10,,20,,,
 Crispy Pork Noodles with Pork Wonton,75,,,,3,10,,,30,,
 Minced Pork Noodles with Pork Wonton,75,,,,3,10,,20,,,
+Mie,1,1,1,1,1,1,1,1,1,1,1
+Heng,1,1,1,1,1,1,1,1,1,2,2
