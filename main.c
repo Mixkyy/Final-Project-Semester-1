@@ -365,7 +365,7 @@ void CreateNewMenuItem() {
     char description[100];
 
     printf("===================================================================================\n");
-    printf("                            Add New Menu Item\n");
+    printf("                                Add New Menu Item\n");
     printf("===================================================================================\n");
 
     // Input new menu item details
@@ -1433,6 +1433,40 @@ void restockMenu(Item items[], int *rowCount, char uniqueNames[][50], int unique
     displayUpdatedCombinedStock(items, *rowCount, uniqueNames, uniqueCount);
 }
 
+// Restock Choice
+
+void RestockChoice() {
+        int CouponChoice;
+    clearScreen();
+    printf("===================================================================================\n");
+    printf("                                Restock Menu\n");
+    printf("===================================================================================\n");
+    printf("1. Hybrid Restock Option\n");
+    printf("2. Auto Restock Option\n");
+    printf("3. Manual Restock Option\n");
+    printf("4. Return To Owner Features\n");
+    printf("===================================================================================\n");
+    printf("Enter your choice: ");
+        scanf("%d", &CouponChoice);
+        clearInputBuffer();
+        switch (CouponChoice) {
+            case 1:
+                break;
+            case 2:
+                break;
+            case 3:
+                RestockFunction();
+                break;
+            case 4:
+                return;
+            default:
+                printf("Invalid choice. Please try again.\n");
+                printf("Press Enter to continue...");
+                getchar();  
+                return;
+        }
+
+}
 
 
 // Owner Menu
@@ -1462,7 +1496,7 @@ void ownerMenu() {
                 CRUDoperationMenu();
                 break;
             case 3:
-                RestockFunction();
+                RestockChoice();
                 break;
             case 4:
                 break;
