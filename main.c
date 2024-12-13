@@ -1428,8 +1428,9 @@ void restockMenu(Item items[], int *rowCount, char uniqueNames[][50], int unique
     }
 
     // Confirm update
+    clearScreen();
     printf("Restocked %s on %s. Updated inventory:\n", uniqueNames[choice], restockDate);
-    displayCombinedStock(items, *rowCount, uniqueNames, uniqueCount);
+    displayUpdatedCombinedStock(items, *rowCount, uniqueNames, uniqueCount);
 }
 
 
