@@ -1766,6 +1766,27 @@ int applyDiscount(int totalCost) {
     return discountAmount;
 }
 
+//logSaleToCSV
+void logSaleToCSV(const char *filename) {
+    FILE *file = fopen(filename, "a"); // เปิดไฟล์ในโหมด append
+    if (file == NULL) {
+        printf("Error: Unable to open sales log file.\n");
+        return;
+    }
+
+    // รับวันที่และเวลาปัจจุบัน
+    time_t t = time(NULL);
+    struct tm *tm_info = localtime(&t);
+    char date[20];
+    strftime(date, sizeof(date), "%Y-%m-%d %H:%M:%S", tm_info);
+
+    // เขียนข้อมูลสินค้าในตะกร้าลงไฟล์
+    for (int i = 0; i < cartSize; i++) {
+        fprintf(file, "%s,%s,%d,%d\n", date, cart[i].name, cart[i].quantity, cart[i].quantity * cart[i].cost);
+    }
+
+    fclose(file); // ปิดไฟล์
+}
 
 
 // View purchased items
@@ -1838,6 +1859,23 @@ void purchase() {
 
     if (choice == 1) {
         printf("Processing your payment...\n");
+         int payment = 0;
+    while (1) {
+        printf("Enter the amount of money you are paying (Baht): ");
+        scanf("%d", &payment);
+        clearInputBuffer();
+
+        if (payment >= totalCost) {
+            int change = payment - totalCost;
+            printf("Payment received: %d Baht\n", payment);
+            printf("Change to be returned: %d Baht\n", change);
+            break;
+        } else {
+            printf("Insufficient payment. You need %d Baht more.\n", totalCost - payment);
+        }
+    }
+        logSaleToCSV("sales_log.csv");
+
         printf("Transaction successful! Thank you for your purchase.\n");
         loadStockFromCSV("Stock");
         loadMenuRequirementsFromCSV("Ingredient");
@@ -1850,6 +1888,21 @@ void purchase() {
 
     printf("Press Enter to continue...\n");
     getchar();  // Wait for user input before returning to the menu
+}
+
+void removeFromCart(int index) {
+    if (index < 0 || index >= cartSize) {
+        printf("Invalid index! Please try again.\n");
+        return;
+    }
+
+    // เลื่อนสินค้าใน cart เพื่อแทนที่ตำแหน่งที่ลบ
+    for (int i = index; i < cartSize - 1; i++) {
+        cart[i] = cart[i + 1];
+    }
+
+    cartSize--; // ลดขนาดของ cart 
+
 }
 
 
@@ -1872,14 +1925,27 @@ void viewcart() {
         printf("Total Cost: %d Baht\n", totalCost);
     }
     printf("1. Purchase\n");
-    printf("2. Back\n");
-    printf("Enter your choice : ");
+    printf("2. Remove an item\n");
+    printf("3. Back\n");
+    printf("Enter your choice: ");
     scanf("%d", &choice);
     clearInputBuffer();
     if (choice == 1){
         loadDiscountsFromCSV("Discount.csv");
         purchase();
-    }else if(choice == 2){
+    }else if (choice == 2) {
+        if (cartSize == 0) {
+            printf("Your cart is empty! No items to remove.\n");
+            clearInputBuffer();
+        } else {
+            int index;
+            printf("Enter the item number to remove: ");
+            scanf("%d", &index);
+            clearInputBuffer();
+            removeFromCart(index - 1); // เรียกใช้ฟังก์ชัน removeFromCart (ใช้ index-1 เพื่อเริ่มจาก 0)
+        }
+        viewcart(); // แสดงตะกร้าอีกครั้งหลังจากลบสินค้า
+    } else if (choice == 3) {
         return;
     }
     
