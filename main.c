@@ -1919,7 +1919,7 @@ void purchase() {
     } else {
         printf("Purchase cancelled. Returning to the menu...\n");
     }
-
+    
     printf("Press Enter to continue...\n");
     getchar();  // Wait for user input before returning to the menu
 }
