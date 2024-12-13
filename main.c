@@ -1052,7 +1052,7 @@ void StockCRUD() {
     printf("3. Edit An Existing Stock\n");
     printf("4. Delete Stock\n");
     printf("5. Return To Owner Features\n");
-    printf("=======================================\n");
+    printf("===================================================================================\n");
     printf("Enter your choice: ");
         scanf("%d", &StockCRUDchoice);
         clearInputBuffer();
