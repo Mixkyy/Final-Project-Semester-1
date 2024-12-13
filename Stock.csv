@@ -1,4 +1,5 @@
 id,name,quantity,unit,restock,expire
+N1,Noodles,60000,gram,10/15/2024,15/12/2024
 GP1,Roasted Pork,10,gram,2025-01-01,2025-01-07
 GC1,Roasted Chicken,20000,gram,2025-01-01,2025-01-07
 SW1,Shrimp Wonton,80,piece,2025-01-01,2025-01-03
