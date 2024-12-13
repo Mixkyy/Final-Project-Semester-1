@@ -352,44 +352,124 @@ void ManageCouponsMenu() {
 // Create New Menu Item
 
 void CreateNewMenuItem() {
-    char filename[] = "Menu.csv";
-    FILE *file = fopen(filename, "a");  // Open file in append mode
-    if (!file) {
-        perror("Error opening file");
+    typedef struct {
+        char name[100];
+        double price;
+        char description[100];
+    } MenuItem;
+
+    typedef struct {
+        char name[50];
+    } Ingredient;
+
+    MenuItem newItem;
+    Ingredient ingredients[MAX_ROWS];
+    int ingredientCount = 0;
+    int newIngredientAmounts[MAX_ROWS] = {0};
+
+    // Determine the next menu number
+    int nextMenuNumber = 1; // Default to 1 if the file is empty
+
+    FILE *menuFile = fopen("Menu.csv", "r");
+    if (menuFile) {
+        char line[MAX_LINE_LENGTH];
+        int isHeader = 1;
+
+        while (fgets(line, sizeof(line), menuFile)) {
+            if (isHeader) {
+                isHeader = 0;
+                continue; // Skip the header row
+            }
+
+            nextMenuNumber++; // Count the number of existing rows
+        }
+
+        fclose(menuFile);
+    }
+
+    // Read ingredients from Ingredient.csv
+    FILE *ingredientFile = fopen("Ingredient.csv", "r");
+    if (!ingredientFile) {
+        perror("Error opening Ingredient.csv");
         return;
     }
 
-    char code[10];
-    char name[50];
-    int price;
-    char description[100];
+    char line[MAX_LINE_LENGTH];
+    int isHeader = 1;
 
-    printf("===================================================================================\n");
-    printf("                                Add New Menu Item\n");
-    printf("===================================================================================\n");
+    // Load ingredient names from the first row of Ingredient.csv
+    if (fgets(line, sizeof(line), ingredientFile)) {
+        char *token = strtok(line, ",");
+        while (token) {
+            if (!isHeader) {
+                strncpy(ingredients[ingredientCount].name, token, sizeof(ingredients[ingredientCount].name) - 1);
+                ingredientCount++;
+            }
+            token = strtok(NULL, ",");
+            isHeader = 0;
+        }
+    }
 
-    // Input new menu item details
-    printf("Enter Menu Code (numeric): ");
-    fgets(code, sizeof(code), stdin);
-    code[strcspn(code, "\n")] = '\0';  // Remove newline character
+    fclose(ingredientFile);
 
-    printf("Enter Menu Name: ");
-    fgets(name, sizeof(name), stdin);
-    name[strcspn(name, "\n")] = '\0';  // Remove newline character
+    // UI to create a new menu item
+    clearScreen();
+    printf("=======================================\n");
+    printf("          Create New Menu Item\n");
+    printf("=======================================\n");
 
-    printf("Enter Price: ");
-    scanf("%d", &price);
-    clearInputBuffer();  // Clear input buffer after scanf
+    printf("Menu item number: %d\n", nextMenuNumber);
 
-    printf("Enter Description: ");
-    fgets(description, sizeof(description), stdin);
-    description[strcspn(description, "\n")] = '\0';  // Remove newline character
+    // Prompt user for new menu item details
+    printf("Enter new menu item name: ");
+    fgets(newItem.name, sizeof(newItem.name), stdin);
+    newItem.name[strcspn(newItem.name, "\n")] = '\0';
 
-    // Append the new item to the file
-    fprintf(file, "%s,%s,%d,%s\n", code, name, price, description);
-    fclose(file);
+    printf("Enter price for the new menu item: ");
+    scanf("%lf", &newItem.price);
+    clearInputBuffer();
 
-    printf("New menu item added successfully!\n");
+    printf("Enter description for the new menu item: ");
+    fgets(newItem.description, sizeof(newItem.description), stdin);
+    newItem.description[strcspn(newItem.description, "\n")] = '\0';
+
+    // Prompt for each ingredient amount
+    printf("\nSpecify the amounts for each ingredient:\n");
+    for (int i = 0; i < ingredientCount; i++) {
+        printf("Amount of %s (enter 0 if not used): ", ingredients[i].name);
+        scanf("%d", &newIngredientAmounts[i]);
+        clearInputBuffer();
+    }
+
+    // Append the new item to the Menu.csv file
+    menuFile = fopen("Menu.csv", "a");
+    if (!menuFile) {
+        perror("Error opening Menu.csv");
+        return;
+    }
+
+    fprintf(menuFile, "%d,%s,%.2f,%s\n", 
+            nextMenuNumber,
+            newItem.name,
+            newItem.price,
+            newItem.description);
+    fclose(menuFile);
+
+    // Append the new item to Ingredient.csv
+    FILE *ingredientFileWrite = fopen("Ingredient.csv", "a");
+    if (!ingredientFileWrite) {
+        perror("Error opening Ingredient.csv");
+        return;
+    }
+
+    fprintf(ingredientFileWrite, "%s", newItem.name); // First column is the menu name
+    for (int i = 0; i < ingredientCount; i++) {
+        fprintf(ingredientFileWrite, ",%d", newIngredientAmounts[i]);
+    }
+    fprintf(ingredientFileWrite, "\n");
+    fclose(ingredientFileWrite);
+
+    printf("\nNew menu item created successfully!\n");
     printf("Press Enter to return to the menu...\n");
     getchar();
 }
