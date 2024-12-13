@@ -1848,10 +1848,8 @@ void loadMenuRequirementsFromCSV(const char* Ingredient) {
 
 
 void CutStocks() {
-    printf("Cutting stock based on cart...\n");
     for (int i = 0; i < cartSize; i++) {
         CartItem* item = &cart[i];
-        printf("Processing item: %s (Quantity: %d)\n", item->name, item->quantity);
 
         for (int j = 0; j < menuItemCount; j++) {
             if (strcmp(item->name, menuIngredients[j].name) == 0) {
