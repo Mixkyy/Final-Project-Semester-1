@@ -1,10 +1,35 @@
-﻿Name,Noodles,Roasted Pork,Roasted Chicken,Shrimp Wonton,Pork Wonton,Vegetables,Egg,Minced Pork,Crispy Pork,Crab,Shimp
-Roasted Pork Noodles,75,40,,,,10,,,,,
-Roasted Pork Noodles with Shrimp Wonton,75,40,,3,,10,,,,,
-Roasted Chicken Noodles with Shrimp Wonton,75,,40,3,,10,,,,,
-Shrimp Noodles with Egg,75,,,,,10,1,,,,60
-Crab Noodles with Shrimp Wonton,75,,,3,,10,,,,30,
-All In One Non-Seafood,75,40,40,3,3,10,,20,,,
-Crispy Pork Noodles with Pork Wonton,75,,,,3,10,,,30,,
-Minced Pork Noodles with Pork Wonton,75,,,,3,10,,20,,,Crystal,1,1,1,1,1,1,1,1,1,11,1
-Mie,1,1,1,1,1,1,1,11,1,1,1
+﻿name,ingredientName,amountPerUnit
+Roasted Pork Noodles,Noodles,75
+Roasted Pork Noodles,Roasted Pork,40
+Roasted Pork Noodles,Vegetables,10
+Roasted Pork Noodles with Shrimp Wonton,Noodles,75
+Roasted Pork Noodles with Shrimp Wonton,Roasted Pork,40
+Roasted Pork Noodles with Shrimp Wonton,Shrimp Wonton,3
+Roasted Pork Noodles with Shrimp Wonton,Vegetables,10
+Roasted Chicken Noodles with Shrimp Wonton,Noodles,75
+Roasted Chicken Noodles with Shrimp Wonton,Roasted Chicken,40
+Roasted Chicken Noodles with Shrimp Wonton,Shrimp Wonton,3
+Roasted Chicken Noodles with Shrimp Wonton,Vegetables,10
+Shrimp Noodles with Egg,Noodles,75
+Shrimp Noodles with Egg,Vegetables,10
+Shrimp Noodles with Egg,Egg,1
+Shrimp Noodles with Egg,Shrimp,60
+Crab Noodles with Shrimp Wonton,Noodles,75
+Crab Noodles with Shrimp Wonton,Shrimp Wonton,3
+Crab Noodles with Shrimp Wonton,Vegetables,10
+Crab Noodles with Shrimp Wonton,Crab,30
+All In One Non-Seafood,Noodles,75
+All In One Non-Seafood,Roasted Pork,40
+All In One Non-Seafood,Roasted Chicken,40
+All In One Non-Seafood,Shrimp Wonton,3
+All In One Non-Seafood,Pork Wonton,3
+All In One Non-Seafood,Vegetables,10
+All In One Non-Seafood,Minced Pork,20
+Crispy Pork Noodles with Pork Wonton,Noodles,75
+Crispy Pork Noodles with Pork Wonton,Pork Wonton,3
+Crispy Pork Noodles with Pork Wonton,Vegetables,10
+Crispy Pork Noodles with Pork Wonton,Crispy Pork,30
+Minced Pork Noodles with Pork Wonton,Noodles,75
+Minced Pork Noodles with Pork Wonton,Pork Wonton,3
+Minced Pork Noodles with Pork Wonton,Vegetables,10
+Minced Pork Noodles with Pork Wonton,Minced Pork,20
