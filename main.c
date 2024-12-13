@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <time.h>
 
 // Function to clear the terminal
 
@@ -1230,8 +1231,14 @@ void displayCombinedStock(Item items[], int rowCount, char uniqueNames[][50], in
             }
         }
 
-        if (strlen(unit) == 0) {
-            strcpy(unit, "unit");
+         if (strlen(unit) == 0) {
+            if (strcmp(uniqueNames[i], "Roasted Pork") == 0 || strcmp(uniqueNames[i], "Roasted Chicken") == 0) {
+                strcpy(unit, "g");
+            } else if (strcmp(uniqueNames[i], "Shrimp Wonton") == 0) {
+                strcpy(unit, "piece");
+            } else {
+                strcpy(unit, "unit");  // Generic fallback unit
+            }
         }
 
         printf("%d. %s: %d %s\n", i + 1, uniqueNames[i], totalQuantity, unit);
@@ -1241,7 +1248,49 @@ void displayCombinedStock(Item items[], int rowCount, char uniqueNames[][50], in
 }
 
 // Display Updated Combined Stock
+int parseDate(const char *date, int *year, int *month, int *day) {
+    if (sscanf(date, "%4d-%2d-%2d", year, month, day) != 3) {
+        return 0; // Invalid format
+    }
 
+    // Validate the date components
+    if (*month < 1 || *month > 12 || *day < 1 || *day > 31) {
+        return 0; // Invalid month or day
+    }
+
+    // Days in each month
+    int daysInMonth[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+    if ((*year % 4 == 0 && *year % 100 != 0) || (*year % 400 == 0)) {
+        daysInMonth[1] = 29; // Leap year adjustment for February
+    }
+
+    if (*day > daysInMonth[*month - 1]) {
+        return 0; // Invalid day for the given month
+    }
+
+    return 1; // Valid date
+}
+int isValidDate(const char *date, const char *restockDate) {
+    int year, month, day, rYear, rMonth, rDay;
+
+    // Parse expiration date
+    if (!parseDate(date, &year, &month, &day)) {
+        return 0; // Invalid expiration date format
+    }
+
+    // Parse restock date
+    if (!parseDate(restockDate, &rYear, &rMonth, &rDay)) {
+        return 0; // Invalid restock date format (should not happen)
+    }
+
+    // Compare dates
+    if (year < rYear || (year == rYear && month < rMonth) ||
+        (year == rYear && month == rMonth && day <= rDay)) {
+        return 0; // Expiration date is earlier or same as restock date
+    }
+
+    return 1; // Valid date
+}
 void displayUpdatedCombinedStock(Item items[], int rowCount, char uniqueNames[][50], int uniqueCount) {
     printf("=======================================\n");
     printf("             Updated Stock             \n");
@@ -1279,41 +1328,77 @@ void displayUpdatedCombinedStock(Item items[], int rowCount, char uniqueNames[][
 
 void restockMenu(Item items[], int *rowCount, char uniqueNames[][50], int uniqueCount) {
     int choice, restockAmount;
-    char restockDate[20], expireDate[20];
+    char expireDate[20], restockDate[20], inputUnit[10];
 
+    // Get the current date
+    time_t now = time(NULL);
+    strftime(restockDate, sizeof(restockDate), "%Y-%m-%d", localtime(&now));
+
+    // Display the stock
     displayCombinedStock(items, *rowCount, uniqueNames, uniqueCount);
 
+    // Prompt user to choose an ingredient
     printf("Select an ingredient to restock (1-%d): ", uniqueCount);
     scanf("%d", &choice);
 
+    // Validate choice
     if (choice < 1 || choice > uniqueCount) {
         printf("Invalid choice. Exiting restock process.\n");
         return;
     }
 
+    // Adjust choice for zero-based indexing
     choice--;
 
-    printf("Enter restock amount for %s : ", uniqueNames[choice]);
+    // Prompt user for restock details
+    printf("Enter restock amount for %s: ", uniqueNames[choice]);
     scanf("%d", &restockAmount);
 
-    printf("Enter restock date (e.g., 1/1/2025): ");
-    scanf("%s", restockDate);
+    // Prompt user for unit and validate
+    do {
+        printf("Enter unit for %s (e.g., g, piece): ", uniqueNames[choice]);
+        scanf("%s", inputUnit);
 
-    printf("Enter expiration date (e.g., 7/1/2025): ");
-    scanf("%s", expireDate);
+        int unitMatches = 0;
+        for (int i = 0; i < *rowCount; i++) {
+            if (strcmp(items[i].name, uniqueNames[choice]) == 0 && strcmp(items[i].unit, inputUnit) == 0) {
+                unitMatches = 1;
+                break;
+            }
+        }
 
+        if (!unitMatches) {
+            printf("Invalid unit. It must match the unit in the stock file.\n");
+        } else {
+            break;
+        }
+    } while (1);
+
+    // Validate expiration date input
+    do {
+        printf("Enter expiration date (YYYY-MM-DD): ");
+        scanf("%s", expireDate);
+
+        if (!isValidDate(expireDate, restockDate)) {
+            printf("Invalid expiration date. Ensure the format is YYYY-MM-DD and it is later than the restock date (%s).\n", restockDate);
+        }
+    } while (!isValidDate(expireDate, restockDate)); // Repeat until valid input
+
+    // Handle restocking logic
     int restocked = 0;
 
+    // First check if there's a row with quantity 0
     for (int i = 0; i < *rowCount; i++) {
         if (strcmp(items[i].name, uniqueNames[choice]) == 0 && items[i].quantity == 0) {
             items[i].quantity += restockAmount;
-            strcpy(items[i].restock, restockDate);
+            strcpy(items[i].restock, restockDate); // Use system date for restock date
             strcpy(items[i].expire, expireDate);
             restocked = 1;
             break;
         }
     }
 
+    // If no row with quantity 0, check for matching expiration date
     if (!restocked) {
         for (int i = 0; i < *rowCount; i++) {
             if (strcmp(items[i].name, uniqueNames[choice]) == 0 &&
@@ -1325,14 +1410,15 @@ void restockMenu(Item items[], int *rowCount, char uniqueNames[][50], int unique
         }
     }
 
+    // If no matching row, add a new row
     if (!restocked) {
         if (*rowCount < MAX_ROWS) {
             Item newItem;
-            sprintf(newItem.id, "NEW%d", *rowCount + 1);
+            sprintf(newItem.id, "NEW%d", *rowCount + 1);  // Generate a new unique ID
             strcpy(newItem.name, uniqueNames[choice]);
             newItem.quantity = restockAmount;
-            strcpy(newItem.unit, items[choice].unit);
-            strcpy(newItem.restock, restockDate);
+            strcpy(newItem.unit, inputUnit);
+            strcpy(newItem.restock, restockDate); // Use system date for restock date
             strcpy(newItem.expire, expireDate);
             items[*rowCount] = newItem;
             (*rowCount)++;
@@ -1340,11 +1426,12 @@ void restockMenu(Item items[], int *rowCount, char uniqueNames[][50], int unique
             printf("Error: Cannot add new row. Maximum capacity reached.\n");
         }
     }
-    clearScreen();
 
-    printf("Restocked %s. Updated inventory:\n", uniqueNames[choice]);
-    displayUpdatedCombinedStock(items, *rowCount, uniqueNames, uniqueCount);
+    // Confirm update
+    printf("Restocked %s on %s. Updated inventory:\n", uniqueNames[choice], restockDate);
+    displayCombinedStock(items, *rowCount, uniqueNames, uniqueCount);
 }
+
 
 
 // Owner Menu
@@ -1405,6 +1492,17 @@ typedef struct {
     int minSpend;            // Minimum spend required
 } Discount;
 
+typedef struct {
+    char name[50];
+    char ingredientName[50];
+    int amountPerUnit; // Amount of the ingredient needed per unit of menu
+} MenuIngredient;
+
+#define MAX_MENU_ITEMS 100
+MenuIngredient menuIngredients[MAX_MENU_ITEMS];
+int menuItemCount = 0;
+
+
 #define MAX_DISCOUNTS 10
 
 // Maximum cart size
@@ -1417,9 +1515,186 @@ int cartSize = 0;
 Discount discounts[MAX_DISCOUNTS];
 int discountCount = 10;
 
-void CutStocks(){
-    
+typedef struct {
+    char id[10];          // Unique identifier
+    char name[50];        // Ingredient name
+    int quantity;         // Quantity available
+    char unit[10];        // Unit of measurement
+    char restockDate[11]; // Restock date
+    char expireDate[11];  // Expiration date
+} StockItem;
+
+#define MAX_STOCKS 100
+StockItem stocks[MAX_STOCKS];
+int stockCount = 0;
+
+// Function to compare dates (returns -1 if date1 < date2, 1 if date1 > date2, 0 if equal)
+int compareDates(const char* date1, const char* date2) {
+    return strcmp(date1, date2);
 }
+
+// Function to load stock data from the CSV file
+void loadStockFromCSV(const char* Stock) {
+    FILE* file = fopen("Stock.csv", "r");
+    if (file == NULL) {
+        perror("Error opening stock file");
+        exit(EXIT_FAILURE);
+    }
+
+    char line[512];
+    fgets(line, sizeof(line), file); // Skip header
+
+    while (fgets(line, sizeof(line), file)) {
+        if (stockCount >= MAX_STOCKS) {
+            printf("Stock capacity exceeded!\n");
+            break;
+        }
+
+        char* token = strtok(line, ",");
+        strncpy(stocks[stockCount].id, token, sizeof(stocks[stockCount].id) - 1);
+
+        token = strtok(NULL, ",");
+        strncpy(stocks[stockCount].name, token, sizeof(stocks[stockCount].name) - 1);
+
+        token = strtok(NULL, ",");
+        stocks[stockCount].quantity = atoi(token);
+
+        token = strtok(NULL, ",");
+        strncpy(stocks[stockCount].unit, token, sizeof(stocks[stockCount].unit) - 1);
+
+        token = strtok(NULL, ",");
+        strncpy(stocks[stockCount].restockDate, token, sizeof(stocks[stockCount].restockDate) - 1);
+
+        token = strtok(NULL, ",");
+        strncpy(stocks[stockCount].expireDate, token, sizeof(stocks[stockCount].expireDate) - 1);
+
+        stockCount++;
+    }
+
+    fclose(file);
+}
+
+// Deduct stock based on ingredient requirements
+void deductStock(const char* ingredient, int requiredQuantity) {
+    for (int i = 0; i < stockCount; i++) {
+        if (strcmp(stocks[i].name, ingredient) == 0) {
+            for (int j = 0; j < stockCount; j++) {
+                // Find the stock item with the nearest expiration date
+                if (strcmp(stocks[j].name, ingredient) == 0 && stocks[j].quantity > 0) {
+                    if (compareDates(stocks[j].expireDate, stocks[i].expireDate) < 0) {
+                        StockItem temp = stocks[i];
+                        stocks[i] = stocks[j];
+                        stocks[j] = temp;
+                    }
+                }
+            }
+
+            // Deduct the stock
+            if (stocks[i].quantity >= requiredQuantity) {
+                stocks[i].quantity -= requiredQuantity;
+                requiredQuantity = 0;
+            } else {
+                requiredQuantity -= stocks[i].quantity;
+                stocks[i].quantity = 0;
+            }
+
+            if (requiredQuantity == 0) break;
+        }
+    }
+
+    if (requiredQuantity > 0) {
+        printf("Warning: Not enough %s in stock!\n", ingredient);
+    }
+}
+// Save updated stock back to the file
+void saveStockToCSV(const char* Stock) {
+    // Open the file in write mode, which overwrites the existing content
+    FILE* file = fopen("Stock.csv", "w");
+    if (file == NULL) {
+        perror("Error saving stock file");
+        return;
+    }
+
+    // Write the header to the CSV file
+    fprintf(file, "id,name,quantity,unit,restock,expire\n");
+
+    // Write each stock item's details
+    for (int i = 0; i < stockCount; i++) {
+        fprintf(file, "%s,%s,%d,%s,%s,%s\n",
+                stocks[i].id,
+                stocks[i].name,
+                stocks[i].quantity,
+                stocks[i].unit,
+                stocks[i].restockDate,
+                stocks[i].expireDate);
+    }
+
+    fclose(file); // Close the file to ensure data is written
+}
+
+void loadMenuRequirementsFromCSV(const char* Ingredient) {
+    FILE* file = fopen("Ingredient.csv", "r");
+    if (file == NULL) {
+        perror("Error opening menu CSV file");
+        return;
+    }
+
+    char line[512];
+    menuItemCount = 0;
+
+    // Skip the first line (header)
+    fgets(line, sizeof(line), file);
+
+    while (fgets(line, sizeof(line), file)) {
+        if (menuItemCount >= MAX_MENU_ITEMS) {
+            printf("Menu capacity exceeded!\n");
+            break;
+        }
+
+        // Parse the CSV line
+        char* token = strtok(line, ",");
+        if (token == NULL) continue;
+
+        // Read menu name
+        strncpy(menuIngredients[menuItemCount].name, token, sizeof(menuIngredients[menuItemCount].name) - 1);
+
+        // Iterate over ingredients in the row
+        while ((token = strtok(NULL, ",")) != NULL) {
+            if (strcmp(token, "") != 0) {
+                strncpy(menuIngredients[menuItemCount].ingredientName, token, sizeof(menuIngredients[menuItemCount].ingredientName) - 1);
+
+                // Get the amount needed per unit
+                token = strtok(NULL, ",");
+                if (token != NULL) {
+                    menuIngredients[menuItemCount].amountPerUnit = atoi(token);
+                }
+                menuItemCount++;
+            }
+        }
+    }
+
+    fclose(file);
+}
+
+
+void CutStocks() {
+    for (int i = 0; i < cartSize; i++) {
+        CartItem* item = &cart[i];
+
+        // Find the matching menu item in the menuIngredients array
+        for (int j = 0; j < menuItemCount; j++) {
+            if (strcmp(item->name, menuIngredients[j].name) == 0) {
+                // Deduct the required stock
+                deductStock(menuIngredients[j].ingredientName, menuIngredients[j].amountPerUnit * item->quantity);
+            }
+        }
+    }
+
+    // Save the updated stock to file
+    saveStockToCSV("Stock.csv");
+}
+
+
 
 void loadDiscountsFromCSV(const char* Discount) {
     FILE* file = fopen("Discount.csv", "r");
@@ -1466,15 +1741,6 @@ void loadDiscountsFromCSV(const char* Discount) {
 
     fclose(file);
 }
-
-void debugPrintDiscounts() {
-    printf("Loaded Discounts:\n");
-    for (int i = 0; i < discountCount; i++) {
-        printf("Code: %s, Discount: %d%%, Min Spend: %d Baht\n",
-               discounts[i].code, discounts[i].discountPercent, discounts[i].minSpend);
-    }
-}
-
 
 int applyDiscount(int totalCost) {
     int discountAmount = 0;
@@ -1556,7 +1822,7 @@ void purchase() {
         if (!discountApplied) {
             printf("Invalid discount code or no discount applied.\n");
         }
-    } else {debugPrintDiscounts();}
+    }
 
     // Confirm purchase
     printf("\nTotal cost after discount: %d Baht\n", totalCost);
@@ -1572,6 +1838,8 @@ void purchase() {
     if (choice == 1) {
         printf("Processing your payment...\n");
         printf("Transaction successful! Thank you for your purchase.\n");
+        loadStockFromCSV("Stock");
+        loadMenuRequirementsFromCSV("Ingredient");
         CutStocks();
         // Clear the cart after purchase
         cartSize = 0;
