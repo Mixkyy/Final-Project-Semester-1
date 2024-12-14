@@ -1,10 +1,35 @@
-﻿Name,Noodles,Roasted Pork,Roasted Chicken,Shrimp Wonton,Pork Wonton,Vegetables,Egg,Minced Pork,Crispy Pork,Crab,Shimp
-Roasted Pork Noodles,75,40,,,,10,,,,,
-Roasted Pork Noodles with Shrimp Wonton,75,40,,3,,10,,,,,
-Roasted Chicken Noodles with Shrimp Wonton,75,,40,3,,10,,,,,
-Shrimp Noodles with Egg,75,,,,,10,1,,,,60
-Crab Noodles with Shrimp Wonton,75,,,3,,10,,,,30,
-All In One Non-Seafood,75,40,40,3,3,10,,20,,,
-Crispy Pork Noodles with Pork Wonton,75,,,,3,10,,,30,,
-Minced Pork Noodles with Pork Wonton,75,,,,3,10,,20,,,Crystal,1,1,1,1,1,1,1,1,1,11,1
-Mie,1,1,1,1,1,1,1,11,1,1,1
+﻿MenuCode,IngredientName,AmountPerUnit
+Roasted Pork NoodlesNoodles,Noodles,75.00
+Roasted Pork NoodlesRoasted Pork,Roasted Pork,40.00
+Roasted Pork NoodlesVegetables,Vegetables,10.00
+Roasted Pork NoodlesNoodles,Noodles,75.00
+Roasted Pork NoodlesRoasted Pork,Roasted Pork,40.00
+Roasted Pork NoodlesShrimp Wonton,Shrimp Wonton,3.00
+Roasted Pork NoodlesVegetables,Vegetables,10.00
+Roasted Chicken NoodNoodles,Noodles,75.00
+Roasted Chicken NoodRoasted Chicken,Roasted Chicken,40.00
+Roasted Chicken NoodShrimp Wonton,Shrimp Wonton,3.00
+Roasted Chicken NoodVegetables,Vegetables,10.00
+Shrimp Noodles with Noodles,Noodles,75.00
+Shrimp Noodles with Vegetables,Vegetables,10.00
+Shrimp Noodles with Egg,Egg,1.00
+Shrimp Noodles with Shrimp,Shrimp,60.00
+Crab Noodles with ShNoodles,Noodles,75.00
+Crab Noodles with ShShrimp Wonton,Shrimp Wonton,3.00
+Crab Noodles with ShVegetables,Vegetables,10.00
+Crab Noodles with ShCrab,Crab,30.00
+All In One Non-SeafoNoodles,Noodles,75.00
+All In One Non-SeafoRoasted Pork,Roasted Pork,40.00
+All In One Non-SeafoRoasted Chicken,Roasted Chicken,40.00
+All In One Non-SeafoShrimp Wonton,Shrimp Wonton,3.00
+All In One Non-SeafoPork Wonton,Pork Wonton,3.00
+All In One Non-SeafoVegetables,Vegetables,10.00
+All In One Non-SeafoMinced Pork,Minced Pork,20.00
+Crispy Pork Noodles Noodles,Noodles,75.00
+Crispy Pork Noodles Pork Wonton,Pork Wonton,3.00
+Crispy Pork Noodles Vegetables,Vegetables,10.00
+Crispy Pork Noodles Crispy Pork,Crispy Pork,30.00
+Minced Pork Noodles Noodles,Noodles,75.00
+Minced Pork Noodles Pork Wonton,Pork Wonton,3.00
+Minced Pork Noodles Vegetables,Vegetables,10.00
+Minced Pork Noodles Minced Pork,Minced Pork,20.00
