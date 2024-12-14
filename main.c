@@ -1468,7 +1468,7 @@ void restockMenu(Item items[], int *rowCount, char uniqueNames[][50], int unique
 
     // Get the current date
     time_t now = time(NULL);
-    strftime(restockDate, sizeof(restockDate), "%Y-%m-%d", localtime(&now));
+     strftime(restockDate, sizeof(restockDate), "%Y-%m-%d %H:%M:%S", localtime(&now));
 
     // Display the stock
     displayCombinedStock(items, *rowCount, uniqueNames, uniqueCount);
@@ -1704,16 +1704,33 @@ int compareDates(const char* date1, const char* date2) {
     return strcmp(date1, date2);
 }
 
+void sortStocksByExpireDate() {
+    for (int i = 0; i < stockCount - 1; i++) {
+        for (int j = i + 1; j < stockCount; j++) {
+            if (compareDates(stocks[i].expireDate, stocks[j].expireDate) > 0) {
+                StockItem temp = stocks[i];
+                stocks[i] = stocks[j];
+                stocks[j] = temp;
+            }
+        }
+    }
+}
+
 // Function to load stock data from the CSV file
 void loadStockFromCSV(const char* Stock) {
+    
     FILE* file = fopen("Stock.csv", "r");
     if (file == NULL) {
         perror("Error opening stock file");
-        exit(EXIT_FAILURE);
+        return;
     }
-
+    
     char line[512];
-    fgets(line, sizeof(line), file); // Skip header
+    if (fgets(line, sizeof(line), file) == NULL) { // Skip header
+        printf("Error reading header line\n");
+        fclose(file);
+        return;
+    }
 
     while (fgets(line, sizeof(line), file)) {
         if (stockCount >= MAX_STOCKS) {
@@ -1721,61 +1738,76 @@ void loadStockFromCSV(const char* Stock) {
             break;
         }
 
+        // Remove trailing newline from the line, if any
+        line[strcspn(line, "\r\n")] = '\0';
+
         char* token = strtok(line, ",");
+        if (token == NULL) continue; // Skip malformed line
         strncpy(stocks[stockCount].id, token, sizeof(stocks[stockCount].id) - 1);
 
         token = strtok(NULL, ",");
+        if (token == NULL) continue; // Skip malformed line
         strncpy(stocks[stockCount].name, token, sizeof(stocks[stockCount].name) - 1);
 
         token = strtok(NULL, ",");
+        if (token == NULL) continue; // Skip malformed line
         stocks[stockCount].quantity = atoi(token);
 
         token = strtok(NULL, ",");
+        if (token == NULL) continue; // Skip malformed line
         strncpy(stocks[stockCount].unit, token, sizeof(stocks[stockCount].unit) - 1);
 
         token = strtok(NULL, ",");
+        if (token == NULL) continue; // Skip malformed line
         strncpy(stocks[stockCount].restockDate, token, sizeof(stocks[stockCount].restockDate) - 1);
 
         token = strtok(NULL, ",");
+        if (token == NULL) continue; // Skip malformed line
         strncpy(stocks[stockCount].expireDate, token, sizeof(stocks[stockCount].expireDate) - 1);
 
         stockCount++;
     }
 
     fclose(file);
+
+    if (stockCount == 0) {
+        return;
+    }
+
+    // Sort stock by expiration date
+    
+    sortStocksByExpireDate();
+    
 }
+
 
 // Deduct stock based on ingredient requirements
 void deductStock(const char* ingredient, int requiredQuantity) {
     for (int i = 0; i < stockCount; i++) {
-        if (strcmp(stocks[i].name, ingredient) == 0) {
-            for (int j = 0; j < stockCount; j++) {
-                // Find the stock item with the nearest expiration date
-                if (strcmp(stocks[j].name, ingredient) == 0 && stocks[j].quantity > 0) {
-                    if (compareDates(stocks[j].expireDate, stocks[i].expireDate) < 0) {
-                        StockItem temp = stocks[i];
-                        stocks[i] = stocks[j];
-                        stocks[j] = temp;
-                    }
+    if (strcmp(stocks[i].name, ingredient) == 0 && stocks[i].quantity > 0) {
+        // ค้นหาสินค้าที่มีวันหมดอายุใกล้ที่สุด
+        for (int j = i + 1; j < stockCount; j++) {
+            if (strcmp(stocks[j].name, ingredient) == 0 && stocks[j].quantity > 0) {
+                if (compareDates(stocks[j].expireDate, stocks[i].expireDate) < 0) {
+                    // สลับสินค้าถ้าจำเป็น
+                    StockItem temp = stocks[i];
+                    stocks[i] = stocks[j];
+                    stocks[j] = temp;
                 }
             }
-
-            // Deduct the stock
-            if (stocks[i].quantity >= requiredQuantity) {
-                stocks[i].quantity -= requiredQuantity;
-                requiredQuantity = 0;
-            } else {
-                requiredQuantity -= stocks[i].quantity;
-                stocks[i].quantity = 0;
-            }
-
-            if (requiredQuantity == 0) break;
         }
-    }
+        // ตัดสต็อก
+        if (stocks[i].quantity >= requiredQuantity) {
+            stocks[i].quantity -= requiredQuantity;
+            requiredQuantity = 0;
+        } else {
+            requiredQuantity -= stocks[i].quantity;
+            stocks[i].quantity = 0;
+        }
 
-    if (requiredQuantity > 0) {
-        printf("Warning: Not enough %s in stock!\n", ingredient);
+        if (requiredQuantity == 0) break;
     }
+}
 }
 // Save updated stock back to the file
 void saveStockToCSV(const char* Stock) {
@@ -1852,16 +1884,14 @@ void CutStocks() {
     for (int i = 0; i < cartSize; i++) {
         CartItem* item = &cart[i];
 
-        // Find the matching menu item in the menuIngredients array
         for (int j = 0; j < menuItemCount; j++) {
             if (strcmp(item->name, menuIngredients[j].name) == 0) {
-                // Deduct the required stock
-                deductStock(menuIngredients[j].ingredientName, menuIngredients[j].amountPerUnit * item->quantity);
+
+                deductStock(menuIngredients[j].ingredientName,
+                            menuIngredients[j].amountPerUnit * item->quantity);
             }
         }
     }
-
-    // Save the updated stock to file
     saveStockToCSV("Stock.csv");
 }
 
@@ -1962,6 +1992,7 @@ void logSaleToCSV(const char *filename) {
 // View purchased items
 // Function to manually apply a discount
 void purchase() {
+    
     if (cartSize == 0) {
         printf("Your cart is empty! Cannot proceed with the purchase.\n");
         return;
@@ -2047,8 +2078,9 @@ void purchase() {
         logSaleToCSV("sales_log.csv");
 
         printf("Transaction successful! Thank you for your purchase.\n");
-        loadStockFromCSV("Stock");
-        loadMenuRequirementsFromCSV("Ingredient");
+        loadStockFromCSV("Stock.csv");
+        loadMenuRequirementsFromCSV("Ingredient.csv");
+
         CutStocks();
         // Clear the cart after purchase
         cartSize = 0;
