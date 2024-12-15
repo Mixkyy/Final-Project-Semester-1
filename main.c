@@ -1435,7 +1435,7 @@ void restockMenu(Item items[], int *rowCount, char uniqueNames[][50], int unique
 
     // Get the current date
     time_t now = time(NULL);
-    strftime(restockDate, sizeof(restockDate), "%Y-%m-%d", localtime(&now));
+     strftime(restockDate, sizeof(restockDate), "%Y-%m-%d %H:%M:%S", localtime(&now));
 
     // Display the stock
     displayCombinedStock(items, *rowCount, uniqueNames, uniqueCount);
