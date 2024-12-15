@@ -365,7 +365,7 @@ void CreateNewMenuItem() {
     MenuItem newItem;
     Ingredient ingredients[MAX_ROWS];
     int ingredientCount = 0;
-    int newIngredientAmounts[MAX_ROWS] = {0};
+    double ingredientAmounts[MAX_ROWS] = {0};
 
     // Determine the next menu number
     int nextMenuNumber = 1; // Default to 1 if the file is empty
@@ -387,26 +387,46 @@ void CreateNewMenuItem() {
         fclose(menuFile);
     }
 
-    // Read ingredients from Ingredient.csv
-    FILE *ingredientFile = fopen("Ingredient.csv", "r");
+    // Read ingredients from Stock.csv
+    FILE *ingredientFile = fopen("Stock.csv", "r");
     if (!ingredientFile) {
-        perror("Error opening Ingredient.csv");
+        perror("Error opening Stock.csv");
         return;
     }
 
     char line[MAX_LINE_LENGTH];
     int isHeader = 1;
 
-    // Load ingredient names from the first row of Ingredient.csv
-    if (fgets(line, sizeof(line), ingredientFile)) {
-        char *token = strtok(line, ",");
-        while (token) {
-            if (!isHeader) {
-                strncpy(ingredients[ingredientCount].name, token, sizeof(ingredients[ingredientCount].name) - 1);
-                ingredientCount++;
-            }
-            token = strtok(NULL, ",");
+    // Load ingredient names from the first column of Stock.csv
+    while (fgets(line, sizeof(line), ingredientFile)) {
+        if (isHeader) {
             isHeader = 0;
+            continue; // Skip the header row
+        }
+
+        char *token = strtok(line, ",");
+        if (token) {
+            // Extract the ingredient name from the second column (after ID)
+            token = strtok(NULL, ","); // Move to the second column which is the name
+            if (token) {
+                // Remove any newline character at the end of the name
+                token[strcspn(token, "\n")] = '\0';
+
+                // Check for duplicates
+                int duplicate = 0;
+                for (int i = 0; i < ingredientCount; i++) {
+                    if (strcmp(ingredients[i].name, token) == 0) {
+                        duplicate = 1;
+                        break;
+                    }
+                }
+
+                if (!duplicate) {
+                    // Add the ingredient to the list
+                    strncpy(ingredients[ingredientCount].name, token, sizeof(ingredients[ingredientCount].name) - 1);
+                    ingredientCount++;
+                }
+            }
         }
     }
 
@@ -433,11 +453,12 @@ void CreateNewMenuItem() {
     fgets(newItem.description, sizeof(newItem.description), stdin);
     newItem.description[strcspn(newItem.description, "\n")] = '\0';
 
-    // Prompt for each ingredient amount
-    printf("\nSpecify the amounts for each ingredient:\n");
+    // Ask the user for the amount of each ingredient in Stock.csv
+    printf("Enter amounts for each ingredient:\n");
+
     for (int i = 0; i < ingredientCount; i++) {
-        printf("Amount of %s (enter 0 if not used): ", ingredients[i].name);
-        scanf("%d", &newIngredientAmounts[i]);
+        printf("Amount of %s required for the new menu item: ", ingredients[i].name);
+        scanf("%lf", &ingredientAmounts[i]);
         clearInputBuffer();
     }
 
@@ -455,24 +476,25 @@ void CreateNewMenuItem() {
             newItem.description);
     fclose(menuFile);
 
-    // Append the new item to Ingredient.csv
+    // Append the new item to Ingredient.csv in the required format
     FILE *ingredientFileWrite = fopen("Ingredient.csv", "a");
     if (!ingredientFileWrite) {
         perror("Error opening Ingredient.csv");
         return;
     }
 
-    fprintf(ingredientFileWrite, "%s", newItem.name); // First column is the menu name
     for (int i = 0; i < ingredientCount; i++) {
-        fprintf(ingredientFileWrite, ",%d", newIngredientAmounts[i]);
+        // Write the menu item, ingredient, and amount
+        fprintf(ingredientFileWrite, "%s,%s,%.2f\n", newItem.name, ingredients[i].name, ingredientAmounts[i]);
     }
-    fprintf(ingredientFileWrite, "\n");
+
     fclose(ingredientFileWrite);
 
     printf("\nNew menu item created successfully!\n");
     printf("Press Enter to return to the menu...\n");
     getchar();
 }
+
 
 // View Menu (Menu CRUD operations)
 
@@ -534,6 +556,16 @@ void ViewMenu() {
 }
 
 // Edit Menu Items
+
+#include <ctype.h>
+
+// Helper function to trim trailing whitespace
+void trimWhitespace(char *str) {
+    int len = strlen(str);
+    while (len > 0 && isspace((unsigned char)str[len - 1])) {
+        str[--len] = '\0';
+    }
+}
 
 void EditMenuItem() {
     typedef struct {
@@ -623,25 +655,28 @@ void EditMenuItem() {
     char newName[100];
     printf("Enter new name (current: %s): ", menu[foundIndex].name);
     fgets(newName, sizeof(newName), stdin);
-    if (newName[0] != '\n') {
+    trimWhitespace(newName);
+    if (newName[0] != '\0') {
         strncpy(menu[foundIndex].name, newName, sizeof(menu[foundIndex].name) - 1);
     }
 
     char priceInput[20];
     printf("Enter new price (current: %.2f): ", menu[foundIndex].price);
     fgets(priceInput, sizeof(priceInput), stdin);
-    if (priceInput[0] != '\n') {
+    trimWhitespace(priceInput);
+    if (priceInput[0] != '\0') {
         menu[foundIndex].price = atof(priceInput);
     }
 
     char newDescription[100];
     printf("Enter new description (current: %s): ", menu[foundIndex].description);
     fgets(newDescription, sizeof(newDescription), stdin);
-    if (newDescription[0] != '\n') {
+    trimWhitespace(newDescription);
+    if (newDescription[0] != '\0') {
         strncpy(menu[foundIndex].description, newDescription, sizeof(menu[foundIndex].description) - 1);
     }
 
-    // Write the updated menu back to the file
+    // Rewrite the menu file with updated details
     FILE *tempFile = fopen("Menu_temp.csv", "w");
     if (!tempFile) {
         perror("Error opening temporary file");
@@ -654,11 +689,11 @@ void EditMenuItem() {
 
     // Write the updated menu items to the temporary file
     for (int i = 0; i < rowCount; i++) {
-        if (i == foundIndex) {
-            fprintf(tempFile, "%s,%s,%.2f,%s\n", menu[i].code, menu[i].name, menu[i].price, menu[i].description);
-        } else {
-            fprintf(tempFile, "%s,%s,%.2f,%s\n", menu[i].code, menu[i].name, menu[i].price, menu[i].description);
-        }
+        fprintf(tempFile, "%s,%s,%.2f,%s\n", 
+                menu[i].code, 
+                menu[i].name, 
+                menu[i].price, 
+                menu[i].description);
     }
 
     fclose(file);
@@ -672,8 +707,6 @@ void EditMenuItem() {
     printf("Press Enter to return to the menu...\n");
     getchar();
 }
-
-
 
 // Delete Menu Items
 
