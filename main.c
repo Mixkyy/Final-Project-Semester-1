@@ -708,6 +708,146 @@ void EditMenuItem() {
     getchar();
 }
 
+// Edit Ingredient
+
+void EditIngredient() {
+    typedef struct {
+        char name[100];
+        char ingredientName[100];
+        int amountPerUnit;
+    } Ingredient;
+
+    Ingredient ingredients[MAX_ROWS];
+    int rowCount = 0;
+
+    // Open the Ingredient.csv file
+    FILE *file = fopen("Ingredient.csv", "r+");
+    if (!file) {
+        perror("Error opening Ingredient.csv");
+        return;
+    }
+
+    char line[MAX_LINE_LENGTH];
+    int isHeader = 1;
+
+    // Read the ingredients from the file into the ingredients array
+    while (fgets(line, sizeof(line), file)) {
+        if (isHeader) {
+            isHeader = 0;
+            continue;
+        }
+
+        sscanf(line, "%[^,],%[^,],%d",
+               ingredients[rowCount].name,
+               ingredients[rowCount].ingredientName,
+               &ingredients[rowCount].amountPerUnit);
+
+        rowCount++;
+    }
+
+    clearScreen();
+    printf("===================================================================================\n");
+    printf("                                 INGREDIENTS\n");
+    printf("===================================================================================\n");
+    printf("Menu Name                                   Ingredient Name                    Amount\n");
+    printf("-----------------------------------------------------------------------------------\n");
+
+    // Track which menu names have already been printed
+    char printedMenus[MAX_ROWS][100] = {0};
+    int printedCount = 0;
+
+    for (int i = 0; i < rowCount; i++) {
+        int alreadyPrinted = 0;
+
+        // Check if the menu name has already been printed
+        for (int j = 0; j < printedCount; j++) {
+            if (strcmp(printedMenus[j], ingredients[i].name) == 0) {
+                alreadyPrinted = 1;
+                break;
+            }
+        }
+
+        // Print the menu name only if it hasn't been printed before
+        if (!alreadyPrinted) {
+            printf("%-45s", ingredients[i].name);
+            strncpy(printedMenus[printedCount++], ingredients[i].name, sizeof(printedMenus[0]) - 1);
+        } else {
+            printf("%-45s", ""); // Leave the menu name column blank for subsequent rows
+        }
+
+        // Print the ingredient details
+        printf("%-35s%-10d\n",
+               ingredients[i].ingredientName,
+               ingredients[i].amountPerUnit);
+    }
+
+    printf("===================================================================================\n");
+
+    // Ask the user for the menu name to edit its ingredients
+    char menuName[100];
+    printf("Enter the name of the menu you want to edit: ");
+    fgets(menuName, sizeof(menuName), stdin);
+    trimWhitespace(menuName);
+
+    // Check if the menu name exists in the ingredient list
+    int found = 0;
+    for (int i = 0; i < rowCount; i++) {
+        if (strcmp(ingredients[i].name, menuName) == 0) {
+            found = 1;
+
+            // Show the current details of the ingredient
+            printf("\nIngredient: %s\n", ingredients[i].ingredientName);
+            printf("Current amount per unit: %d\n", ingredients[i].amountPerUnit);
+
+            // Prompt the user to enter a new amount
+            printf("Enter new amount (or press Enter to keep current value): ");
+            char amountInput[10];
+            fgets(amountInput, sizeof(amountInput), stdin);
+            trimWhitespace(amountInput);
+            if (amountInput[0] != '\0') {
+                ingredients[i].amountPerUnit = atoi(amountInput);
+            }
+        }
+    }
+
+    if (!found) {
+        printf("No ingredients found for the specified menu.\n");
+        fclose(file);
+        return;
+    }
+
+    // Rewrite the Ingredient.csv file with updated details
+    FILE *tempFile = fopen("Ingredient_temp.csv", "w");
+    if (!tempFile) {
+        perror("Error opening temporary file");
+        fclose(file);
+        return;
+    }
+
+    // Write the header to the temporary file
+    fprintf(tempFile, "name,ingredientName,amountPerUnit\n");
+
+    // Write the updated ingredients to the temporary file
+    for (int i = 0; i < rowCount; i++) {
+        fprintf(tempFile, "%s,%s,%d\n",
+                ingredients[i].name,
+                ingredients[i].ingredientName,
+                ingredients[i].amountPerUnit);
+    }
+
+    fclose(file);
+    fclose(tempFile);
+
+    // Replace the original file with the updated temporary file
+    remove("Ingredient.csv");
+    rename("Ingredient_temp.csv", "Ingredient.csv");
+
+    printf("\nIngredients updated successfully!\n");
+    printf("Press Enter to return to the menu...\n");
+    getchar();
+}
+
+
 // Delete Menu Items
 
 void DeleteMenuItem() {
@@ -803,6 +943,41 @@ void DeleteMenuItem() {
     getchar();
 }
 
+// Edit Menu Item Menu
+
+void EditMenuItemMenu() {
+    int MenuMenuChoice;
+    clearScreen();
+    printf("===================================================================================\n");
+    printf("                                Edit Menu Item\n");
+    printf("===================================================================================\n");
+    printf("1. Edit Name/Price/Description\n");
+    printf("2. Edit Ingredients\n");
+    printf("3. Edit An Existing Menu\n");
+    printf("===================================================================================\n");
+    printf("Enter your choice: ");
+        scanf("%d", &MenuMenuChoice);
+        clearInputBuffer();
+        switch (MenuMenuChoice) {
+            case 1:
+                EditMenuItem();
+                MenuCRUD();
+                break;
+            case 2:
+                EditIngredient();
+                MenuCRUD();
+                break;
+            case 3:
+                return;
+                break;
+            default:
+                printf("Invalid choice. Please try again.\n");
+                printf("Press Enter to continue...");
+                getchar();  
+                EditMenuItemMenu();
+        }
+}
+
 
 
 // Menu CRUD operations
@@ -832,7 +1007,7 @@ void MenuCRUD() {
                 MenuCRUD();
                 break;
             case 3:
-                EditMenuItem();
+                EditIngredient();
                 MenuCRUD();
                 break;
             case 4:
@@ -1468,7 +1643,7 @@ void restockMenu(Item items[], int *rowCount, char uniqueNames[][50], int unique
 
     // Get the current date
     time_t now = time(NULL);
-     strftime(restockDate, sizeof(restockDate), "%Y-%m-%d %H:%M:%S", localtime(&now));
+    strftime(restockDate, sizeof(restockDate), "%Y-%m-%d", localtime(&now));
 
     // Display the stock
     displayCombinedStock(items, *rowCount, uniqueNames, uniqueCount);
@@ -1704,33 +1879,16 @@ int compareDates(const char* date1, const char* date2) {
     return strcmp(date1, date2);
 }
 
-void sortStocksByExpireDate() {
-    for (int i = 0; i < stockCount - 1; i++) {
-        for (int j = i + 1; j < stockCount; j++) {
-            if (compareDates(stocks[i].expireDate, stocks[j].expireDate) > 0) {
-                StockItem temp = stocks[i];
-                stocks[i] = stocks[j];
-                stocks[j] = temp;
-            }
-        }
-    }
-}
-
 // Function to load stock data from the CSV file
 void loadStockFromCSV(const char* Stock) {
-    
     FILE* file = fopen("Stock.csv", "r");
     if (file == NULL) {
         perror("Error opening stock file");
-        return;
+        exit(EXIT_FAILURE);
     }
-    
+
     char line[512];
-    if (fgets(line, sizeof(line), file) == NULL) { // Skip header
-        printf("Error reading header line\n");
-        fclose(file);
-        return;
-    }
+    fgets(line, sizeof(line), file); // Skip header
 
     while (fgets(line, sizeof(line), file)) {
         if (stockCount >= MAX_STOCKS) {
@@ -1738,76 +1896,61 @@ void loadStockFromCSV(const char* Stock) {
             break;
         }
 
-        // Remove trailing newline from the line, if any
-        line[strcspn(line, "\r\n")] = '\0';
-
         char* token = strtok(line, ",");
-        if (token == NULL) continue; // Skip malformed line
         strncpy(stocks[stockCount].id, token, sizeof(stocks[stockCount].id) - 1);
 
         token = strtok(NULL, ",");
-        if (token == NULL) continue; // Skip malformed line
         strncpy(stocks[stockCount].name, token, sizeof(stocks[stockCount].name) - 1);
 
         token = strtok(NULL, ",");
-        if (token == NULL) continue; // Skip malformed line
         stocks[stockCount].quantity = atoi(token);
 
         token = strtok(NULL, ",");
-        if (token == NULL) continue; // Skip malformed line
         strncpy(stocks[stockCount].unit, token, sizeof(stocks[stockCount].unit) - 1);
 
         token = strtok(NULL, ",");
-        if (token == NULL) continue; // Skip malformed line
         strncpy(stocks[stockCount].restockDate, token, sizeof(stocks[stockCount].restockDate) - 1);
 
         token = strtok(NULL, ",");
-        if (token == NULL) continue; // Skip malformed line
         strncpy(stocks[stockCount].expireDate, token, sizeof(stocks[stockCount].expireDate) - 1);
 
         stockCount++;
     }
 
     fclose(file);
-
-    if (stockCount == 0) {
-        return;
-    }
-
-    // Sort stock by expiration date
-    
-    sortStocksByExpireDate();
-    
 }
-
 
 // Deduct stock based on ingredient requirements
 void deductStock(const char* ingredient, int requiredQuantity) {
     for (int i = 0; i < stockCount; i++) {
-    if (strcmp(stocks[i].name, ingredient) == 0 && stocks[i].quantity > 0) {
-        // ค้นหาสินค้าที่มีวันหมดอายุใกล้ที่สุด
-        for (int j = i + 1; j < stockCount; j++) {
-            if (strcmp(stocks[j].name, ingredient) == 0 && stocks[j].quantity > 0) {
-                if (compareDates(stocks[j].expireDate, stocks[i].expireDate) < 0) {
-                    // สลับสินค้าถ้าจำเป็น
-                    StockItem temp = stocks[i];
-                    stocks[i] = stocks[j];
-                    stocks[j] = temp;
+        if (strcmp(stocks[i].name, ingredient) == 0) {
+            for (int j = 0; j < stockCount; j++) {
+                // Find the stock item with the nearest expiration date
+                if (strcmp(stocks[j].name, ingredient) == 0 && stocks[j].quantity > 0) {
+                    if (compareDates(stocks[j].expireDate, stocks[i].expireDate) < 0) {
+                        StockItem temp = stocks[i];
+                        stocks[i] = stocks[j];
+                        stocks[j] = temp;
+                    }
                 }
             }
-        }
-        // ตัดสต็อก
-        if (stocks[i].quantity >= requiredQuantity) {
-            stocks[i].quantity -= requiredQuantity;
-            requiredQuantity = 0;
-        } else {
-            requiredQuantity -= stocks[i].quantity;
-            stocks[i].quantity = 0;
-        }
 
-        if (requiredQuantity == 0) break;
+            // Deduct the stock
+            if (stocks[i].quantity >= requiredQuantity) {
+                stocks[i].quantity -= requiredQuantity;
+                requiredQuantity = 0;
+            } else {
+                requiredQuantity -= stocks[i].quantity;
+                stocks[i].quantity = 0;
+            }
+
+            if (requiredQuantity == 0) break;
+        }
     }
-}
+
+    if (requiredQuantity > 0) {
+        printf("Warning: Not enough %s in stock!\n", ingredient);
+    }
 }
 // Save updated stock back to the file
 void saveStockToCSV(const char* Stock) {
@@ -1884,14 +2027,16 @@ void CutStocks() {
     for (int i = 0; i < cartSize; i++) {
         CartItem* item = &cart[i];
 
+        // Find the matching menu item in the menuIngredients array
         for (int j = 0; j < menuItemCount; j++) {
             if (strcmp(item->name, menuIngredients[j].name) == 0) {
-
-                deductStock(menuIngredients[j].ingredientName,
-                            menuIngredients[j].amountPerUnit * item->quantity);
+                // Deduct the required stock
+                deductStock(menuIngredients[j].ingredientName, menuIngredients[j].amountPerUnit * item->quantity);
             }
         }
     }
+
+    // Save the updated stock to file
     saveStockToCSV("Stock.csv");
 }
 
@@ -1992,7 +2137,6 @@ void logSaleToCSV(const char *filename) {
 // View purchased items
 // Function to manually apply a discount
 void purchase() {
-    
     if (cartSize == 0) {
         printf("Your cart is empty! Cannot proceed with the purchase.\n");
         return;
@@ -2078,9 +2222,8 @@ void purchase() {
         logSaleToCSV("sales_log.csv");
 
         printf("Transaction successful! Thank you for your purchase.\n");
-        loadStockFromCSV("Stock.csv");
-        loadMenuRequirementsFromCSV("Ingredient.csv");
-
+        loadStockFromCSV("Stock");
+        loadMenuRequirementsFromCSV("Ingredient");
         CutStocks();
         // Clear the cart after purchase
         cartSize = 0;
