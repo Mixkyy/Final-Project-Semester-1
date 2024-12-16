@@ -2567,31 +2567,28 @@ void customerMenu() {
 }
 
 int isAutoPurchasedToday() {
-    FILE *file = fopen(FLAG_FILE, "r");
+    FILE *file = fopen(FLAG_FILE, "a+"); // Open in append+read mode
     if (file == NULL) {
-        printf("Error: Unable to open flag file.\n");
-        return 0; // Assume auto-purchase hasn't been done
+        printf("Error: Unable to open or create flag file.\n");
+        return 1;
     }
 
-    char line[100];
     char today[20];
     time_t t = time(NULL);
     struct tm *tm_info = localtime(&t);
-    strftime(today, sizeof(today), "%Y-%m-%d", tm_info); // Get today's date as string
+    strftime(today, sizeof(today), "%Y-%m-%d", tm_info); // Format today's date as "YYYY-MM-DD"
 
-    // Skip header
-    fgets(line, sizeof(line), file);
-
-    // Check each line for today's date
-    while (fgets(line, sizeof(line), file)) {
-        if (strstr(line, today) != NULL) {
-            fclose(file);
-            return 1; // Found today's date, auto-purchase already done
-        }
+    // Write the header if the file is empty
+    fseek(file, 0, SEEK_END); // Go to end of file
+    if (ftell(file) == 0) {   // Check if file is empty
+        fprintf(file, "date,flag\n");
     }
 
+    // Append today's date
+    fprintf(file, "%s,1\n", today);
+
     fclose(file);
-    return 0; // Today's date not found
+    return 0;
 }
 
 // Function to update the flag file with today's date
@@ -2610,50 +2607,51 @@ void updateFlagFile() {
     // Write today's date and flag to the file
     fprintf(file, "%s,1\n", today); // '1' indicates auto-purchase done
     fclose(file);
-    printf("Flag file updated with today's date: %s\n", today);
 }
 
 int timecheck() {
-    time_t t = time(NULL);
-    struct tm* tm_info = localtime(&t);
-    char today[11]; // Buffer to store the current date (YYYY-MM-DD)
-    strftime(today, sizeof(today), "%Y-%m-%d", tm_info);
-
-    // Open the flag file
-    FILE *file = fopen(FLAG_FILE, "r+");
+    FILE *file = fopen(FLAG_FILE, "a+"); // Open flag file in read+write mode
     if (file == NULL) {
-        // If the file does not exist, create it
+        // If file doesn't exist, create it with header
         file = fopen(FLAG_FILE, "w");
         if (file == NULL) {
             printf("Error: Unable to create flag file.\n");
             return 0;
         }
-        fprintf(file, "date,flag\n"); // Write the header
+        fprintf(file, "date,flag\n"); // Write header
+        fclose(file);
+        file = fopen(FLAG_FILE, "r+"); // Reopen in read+write mode
     }
 
+    char today[20];
+    time_t t = time(NULL);
+    struct tm *tm_info = localtime(&t);
+    strftime(today, sizeof(today), "%Y-%m-%d", tm_info); // Format today's date as "YYYY-MM-DD"
+
     char line[50];
-    char date[11], flag[2];
+    char date[20], flag[5];
     int alreadyPurchased = 0;
 
-    // Read the flag file to check if today's date is logged
+    // Check if today's date is already recorded
     while (fgets(line, sizeof(line), file)) {
-        if (sscanf(line, "%10[^,],%1[^\n]", date, flag) == 2) {
+        if (sscanf(line, "%19[^,],%4s", date, flag) == 2) {
             if (strcmp(date, today) == 0 && strcmp(flag, "1") == 0) {
-                alreadyPurchased = 1; // Auto-purchase already performed today
+                alreadyPurchased = 1; // Found today's date
                 break;
             }
         }
     }
 
-    // If not already purchased, append today's date and flag to the file
-    if (!alreadyPurchased && tm_info->tm_wday == 6) { // Check if it's Saturday (tm_wday == 6)
-        fseek(file, 0, SEEK_END); // Move to the end of the file
+    // If not already purchased and today is Saturday, append today's date
+    if (!alreadyPurchased && tm_info->tm_wday == 1) { // 6 = Saturday
+        fseek(file, 0, SEEK_END); // Move to end of file
         fprintf(file, "%s,1\n", today);
     }
 
     fclose(file);
-    return !alreadyPurchased; // Return 1 if auto-purchase should proceed, 0 otherwise
+    return !alreadyPurchased; // Return 1 if auto-purchase performed, 0 otherwise
 }
+
 
 void autologSaleToCSV(const char *filename) {
     FILE *file = fopen(filename, "a"); // เปิดไฟล์ในโหมด append
