@@ -4,8 +4,6 @@
 #include <ctype.h>
 #include <time.h>
 
-// Function to clear the terminal
-
 void clearScreen() {
     #ifdef _WIN32
         system("cls");
@@ -25,6 +23,7 @@ void clearInputBuffer() {
 
 #define MAX_ROWS 100
 #define MAX_LINE_LENGTH 256
+#define FLAG_FILE "flag.csv"
 
 typedef struct {
     char code[20];
@@ -1879,7 +1878,6 @@ void loadMenuRequirementsFromCSV(const char* Ingredient) {
     fclose(file);
 }
 
-
 void CutStocks() {
     for (int i = 0; i < cartSize; i++) {
         CartItem* item = &cart[i];
@@ -2425,6 +2423,140 @@ void customerMenu() {
     } while (customerChoice != 3);
 }
 
+int isAutoPurchasedToday() {
+    FILE *file = fopen(FLAG_FILE, "r");
+    if (file == NULL) {
+        printf("Error: Unable to open flag file.\n");
+        return 0; // Assume auto-purchase hasn't been done
+    }
+
+    char line[100];
+    char today[20];
+    time_t t = time(NULL);
+    struct tm *tm_info = localtime(&t);
+    strftime(today, sizeof(today), "%Y-%m-%d", tm_info); // Get today's date as string
+
+    // Skip header
+    fgets(line, sizeof(line), file);
+
+    // Check each line for today's date
+    while (fgets(line, sizeof(line), file)) {
+        if (strstr(line, today) != NULL) {
+            fclose(file);
+            return 1; // Found today's date, auto-purchase already done
+        }
+    }
+
+    fclose(file);
+    return 0; // Today's date not found
+}
+
+// Function to update the flag file with today's date
+void updateFlagFile() {
+    FILE *file = fopen(FLAG_FILE, "a"); // Append mode
+    if (file == NULL) {
+        printf("Error: Unable to open flag file for writing.\n");
+        return;
+    }
+
+    char today[20];
+    time_t t = time(NULL);
+    struct tm *tm_info = localtime(&t);
+    strftime(today, sizeof(today), "%Y-%m-%d", tm_info); // Get today's date as string
+
+    // Write today's date and flag to the file
+    fprintf(file, "%s,1\n", today); // '1' indicates auto-purchase done
+    fclose(file);
+    printf("Flag file updated with today's date: %s\n", today);
+}
+
+int timecheck() {
+    time_t t = time(NULL);
+    struct tm* tm_info = localtime(&t);
+    char today[11]; // Buffer to store the current date (YYYY-MM-DD)
+    strftime(today, sizeof(today), "%Y-%m-%d", tm_info);
+
+    // Open the flag file
+    FILE *file = fopen(FLAG_FILE, "r+");
+    if (file == NULL) {
+        // If the file does not exist, create it
+        file = fopen(FLAG_FILE, "w");
+        if (file == NULL) {
+            printf("Error: Unable to create flag file.\n");
+            return 0;
+        }
+        fprintf(file, "date,flag\n"); // Write the header
+    }
+
+    char line[50];
+    char date[11], flag[2];
+    int alreadyPurchased = 0;
+
+    // Read the flag file to check if today's date is logged
+    while (fgets(line, sizeof(line), file)) {
+        if (sscanf(line, "%10[^,],%1[^\n]", date, flag) == 2) {
+            if (strcmp(date, today) == 0 && strcmp(flag, "1") == 0) {
+                alreadyPurchased = 1; // Auto-purchase already performed today
+                break;
+            }
+        }
+    }
+
+    // If not already purchased, append today's date and flag to the file
+    if (!alreadyPurchased && tm_info->tm_wday == 6) { // Check if it's Saturday (tm_wday == 6)
+        fseek(file, 0, SEEK_END); // Move to the end of the file
+        fprintf(file, "%s,1\n", today);
+    }
+
+    fclose(file);
+    return !alreadyPurchased; // Return 1 if auto-purchase should proceed, 0 otherwise
+}
+
+void autologSaleToCSV(const char *filename) {
+    FILE *file = fopen(filename, "a"); // เปิดไฟล์ในโหมด append
+    if (file == NULL) {
+        printf("Error: Unable to open sales log file.\n");
+        return;
+    }
+
+    // รับวันที่และเวลาปัจจุบัน
+    time_t t = time(NULL);
+    struct tm *tm_info = localtime(&t);
+    char date[20];
+    strftime(date, sizeof(date), "%Y-%m-%d %H:%M:%S", tm_info);
+    const char *name = "All In One Non-Seafood";
+    int quantity = 1, cost = 150;
+    
+    fprintf(file, "%s,%s,%d,%d\n", date, name, quantity, cost);
+    
+
+    fclose(file); // ปิดไฟล์
+}
+
+void autoCutStocks() {
+    loadStockFromCSV("Stock.csv");
+    loadMenuRequirementsFromCSV("Ingredient.csv");
+    const char* selectedMenuName = "All In One Non-Seafood"; // Hardcoded menu name
+
+    for (int j = 0; j < menuItemCount; j++) {
+        if (strcmp(selectedMenuName, menuIngredients[j].name) == 0) {
+            // Deduct stock for each ingredient in the selected menu
+            deductStock(menuIngredients[j].ingredientName,
+                        menuIngredients[j].amountPerUnit);
+        }
+    }
+    saveStockToCSV("Stock.csv");
+}
+
+int autoPurchased(){
+    int a=1;
+    if (timecheck()) {
+        autoCutStocks();  // Simulate cutting stock
+        return a;
+    } else return;
+    
+}
+
 // Main Menu
 
 void mainMenu() {
@@ -2438,6 +2570,12 @@ void mainMenu() {
         printf("2. Customer Features\n");
         printf("3. Exit\n");
         printf("-----------------------------------------------------------------------------------\n");
+        if (autoPurchased()==1){
+            
+            printf("--Auto Purchased x1 All In One Non-Seafood--\n");
+            printf("-----------------------------------------------------------------------------------\n");
+            autologSaleToCSV("sales_log.csv");
+        }
         printf("Enter your choice: ");
         scanf("%d", &choice);
         clearInputBuffer();  
