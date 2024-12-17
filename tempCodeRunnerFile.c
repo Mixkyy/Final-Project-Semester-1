@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 
 <<<<<<< HEAD
         fprintf(file, "%s,%s,%d,%s,%s,%s\n",
@@ -59,3 +60,6 @@ void displayCombinedStock(Item items[], int rowCount, char uniqueNames[][50], in
 =======
     while (getchar() != '\n');
 >>>>>>> 384deac9f17c31113b2b2f938c8e2df39dffc0d0
+=======
+stockCountLogging
+>>>>>>> d78860d5750145e161c66db390ea934663dfa4ed
