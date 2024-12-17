@@ -1115,10 +1115,10 @@ void ManageCouponsMenu() {
     printf("===================================================================================\n");
     printf("                            Manage Discount Coupons\n");
     printf("===================================================================================\n");
-    printf("1. View Discount Coupons\n");
-    printf("2. Create A Coupon\n");
-    printf("3. Delete A Coupon\n");
-    printf("4. Edit A Coupon\n");
+    printf("1. Create A Coupon\n");
+    printf("2. View Discount Coupons\n");
+    printf("3. Edit A Coupon\n");
+    printf("4. Delete A Coupon\n");
     printf("5. Return to Owner Features\n");
     printf("===================================================================================\n");
     printf("Enter your choice: ");
@@ -1126,19 +1126,19 @@ void ManageCouponsMenu() {
         clearInputBuffer();
         switch (CouponChoice) {
             case 1:
-                ViewDiscountCoupon();
-                ManageCouponsMenu();
-                break;
-            case 2:
                 CreateCoupon();
                 ManageCouponsMenu();
                 break;
+            case 2:
+                ViewDiscountCoupon();
+                ManageCouponsMenu();
+                break;
             case 3:
-                DeleteCoupon();
+                EditCoupon();
                 ManageCouponsMenu();
                 break;
             case 4:
-                EditCoupon();
+                DeleteCoupon();
                 ManageCouponsMenu();
                 break;
             case 5:
