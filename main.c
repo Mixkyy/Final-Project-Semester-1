@@ -2999,6 +2999,12 @@ void autoRestock(StockItem stock[], int *stock_count, RestockRule rules[], int r
     }
 }
 
+void getCurrentDate(char* currentDate) {
+    time_t t = time(NULL);
+    struct tm* tm_info = localtime(&t);  // Using localtime (not thread-safe, but simpler)
+    strftime(currentDate, 20, "%Y-%m-%d", tm_info);
+}
+
 // Function to compare dates (returns -1 if date1 < date2, 1 if date1 > date2, 0 if equal)
 int compareDates(const char* date1, const char* date2) {
     return strcmp(date1, date2);
@@ -3795,11 +3801,76 @@ int autoPurchased(){
     
 }
 
+// Function to save only non-expired and non-zero quantity stock items to CSV
+void saveNonExpiredStockToCSV(StockItem stock[], int stockCount) {
+    // Open the file in write mode, overwriting the existing file
+    FILE* file = fopen(STOCK_FILE, "w");
+    if (file == NULL) {
+        perror("Error opening stock file for saving");
+        return;
+    }
+
+    // Write the header to the CSV file
+    fprintf(file, "id,name,quantity,unit,restock,expire\n");
+
+    // Get the current date for comparison
+    char currentDate[20];
+    getCurrentDate(currentDate);
+
+    // Write only non-expired and non-zero quantity items back to the file
+    for (int i = 0; i < stockCount; i++) {
+        // Only write items that have a quantity > 0 and are not expired
+        if (stock[i].quantity > 0 && compareDates(stock[i].expireDate, currentDate) > 0) {
+            fprintf(file, "%s,%s,%d,%s,%s,%s\n",
+                    stock[i].id,
+                    stock[i].name,
+                    stock[i].quantity,
+                    stock[i].unit,
+                    stock[i].restockDate,
+                    stock[i].expireDate);
+        }
+    }
+
+    fclose(file); // Close the file to ensure data is written
+    printf("Stock file updated. Expired and zero-quantity items removed.\n");
+}
+
+
+// Function to remove expired ingredients from stock
+void removeExpiredItems(StockItem* stock, int* stock_count) {
+    char currentDate[20];
+    getCurrentDate(currentDate);  // Get the current date
+
+    // Create a new temporary array for non-expired items
+    StockItem newStock[MAX_STOCKS];
+    int newStockCount = 0;
+    int stockCount = loadStock(stocks, MAX_STOCKS);
+
+    // Iterate over the stock and check expiration date
+    for (int i = 0; i < *stock_count; i++) {
+        if (compareDates(stock[i].expireDate, currentDate) < 0) {
+            // Item is expired, skip adding it to the new stock
+            printf("Removing expired item: %s (ID: %s)\n", stock[i].name, stock[i].id);
+        } else {
+            // Item is not expired, keep it in the new stock
+            newStock[newStockCount++] = stock[i];
+        }
+    }
+
+    // Update the stock count and stock array to the new non-expired items
+    *stock_count = newStockCount;
+    memcpy(stock, newStock, sizeof(StockItem) * newStockCount);
+
+    // After removing expired items, save the updated stock to the CSV file
+    saveNonExpiredStockToCSV(stocks, stockCount);
+}
+
 // Main Menu
 
 void mainMenu() {
     int choice;
     do {
+        removeExpiredItems(stocks, &stockCount);
         clearScreen();
         printf("===================================================================================\n");
         printf("                        INVENTORY MANAGEMENT SYSTEM\n");
