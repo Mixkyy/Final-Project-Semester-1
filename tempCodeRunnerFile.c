@@ -1,92 +1,57 @@
-void DeleteMenuItem() {
-    typedef struct {
-        char code[20];
-        char name[100];
-        double price;
-        char description[100];
-    } MenuItem;
 
-    MenuItem menu[MAX_ROWS];
-    int rowCount = 0;
-
-    FILE *file = fopen("Menu.csv", "r");
-    if (!file) {
-        perror("Error opening file");
-        return;
-    }
-
-    char line[MAX_LINE_LENGTH];
-    int isHeader = 1;
-
-    while (fgets(line, sizeof(line), file)) {
-        if (isHeader) {
-            isHeader = 0;
-            continue;
-        }
-
-        sscanf(line, "%[^,],%[^,],%lf,%[^\n]",
-               menu[rowCount].code,
-               menu[rowCount].name,
-               &menu[rowCount].price,
-               menu[rowCount].description);
-
-        rowCount++;
+        fprintf(file, "%s,%s,%d,%s,%s,%s\n",
+                items[i].id,
+                items[i].name,
+                items[i].quantity,
+                items[i].unit,
+                items[i].restock,
+                items[i].expire);
     }
 
     fclose(file);
+}
 
-    clearScreen();
-    printf("===================================================================================\n");
-    printf("                                       MENU\n");
-    printf("===================================================================================\n");
-    printf("Code    Name                                             Price     Description\n");
-    printf("-----------------------------------------------------------------------------------\n");
+int getUniqueIngredients(Item items[], int rowCount, char uniqueNames[][50]) {
+    int uniqueCount = 0;
 
     for (int i = 0; i < rowCount; i++) {
-        printf("%-7s%-50s%-10.2f%-30s\n",
-               menu[i].code,
-               menu[i].name,
-               menu[i].price,
-               menu[i].description);
-    }
+        int isUnique = 1;
 
-    printf("===================================================================================\n");
-    printf("Enter the code of the menu item to delete: ");
-    
-    char codeToDelete[20];
-    fgets(codeToDelete, sizeof(codeToDelete), stdin);
-    codeToDelete[strcspn(codeToDelete, "\n")] = '\0';
+        for (int j = 0; j < uniqueCount; j++) {
+            if (strcmp(items[i].name, uniqueNames[j]) == 0) {
+                isUnique = 0;
+                break;
+            }
+        }
 
-    FILE *tempFile = fopen("TempMenu.csv", "w");
-    if (!tempFile) {
-        perror("Error creating temporary file");
-        return;
-    }
-
-    int found = 0;
-    for (int i = 0; i < rowCount; i++) {
-        if (strcmp(menu[i].code, codeToDelete) != 0) {
-            fprintf(tempFile, "%s,%s,%.2f,%s\n",
-                    menu[i].code,
-                    menu[i].name,
-                    menu[i].price,
-                    menu[i].description);
-        } else {
-            found = 1;
+        if (isUnique) {
+            strcpy(uniqueNames[uniqueCount], items[i].name);
+            uniqueCount++;
         }
     }
 
-    fclose(tempFile);
-
-    if (found) {
-        remove("Menu.csv");
-        rename("TempMenu.csv", "Menu.csv");
-        printf("Menu item with code '%s' deleted successfully!\n", codeToDelete);
-    } else {
-        remove("TempMenu.csv");
-        printf("Menu item with code '%s' not found.\n", codeToDelete);
-    }
-
-    printf("Press Enter to return to the menu...\n");
-    getchar();
+    return uniqueCount;
 }
+
+void displayCombinedStock(Item items[], int rowCount, char uniqueNames[][50], int uniqueCount) {
+    printf("===================================================================================\n");
+    printf("                                  Current Stock             \n");
+    printf("===================================================================================\n");
+
+    for (int i = 0; i < uniqueCount; i++) {
+        int totalQuantity = 0;
+        char unit[10] = "";
+
+        for (int j = 0; j < rowCount; j++) {
+            if (strcmp(items[j].name, uniqueNames[i]) == 0) {
+                totalQuantity += items[j].quantity;
+
+                if (strlen(items[j].unit) > 0) {
+                    strcpy(unit, items[j].unit);
+                }
+            }
+        }
+
+         if (strlen(unit) == 0) {
+            if (strcmp(uniqueNames[i], "Roasted Pork") == 0 || strcmp(uniqueNames[i], "Roasted Chicken") == 0) {
+                strcpy(unit, "g");
