@@ -953,7 +953,7 @@ void EditMenuItemMenu() {
     printf("===================================================================================\n");
     printf("1. Edit Name/Price/Description\n");
     printf("2. Edit Ingredients\n");
-    printf("3. Edit An Existing Menu\n");
+    printf("3. Return to Menu CRUD Operations\n");
     printf("===================================================================================\n");
     printf("Enter your choice: ");
         scanf("%d", &MenuMenuChoice);
@@ -961,11 +961,11 @@ void EditMenuItemMenu() {
         switch (MenuMenuChoice) {
             case 1:
                 EditMenuItem();
-                MenuCRUD();
+                EditMenuItemMenu();
                 break;
             case 2:
                 EditIngredient();
-                MenuCRUD();
+                EditMenuItemMenu();
                 break;
             case 3:
                 return;
@@ -1007,7 +1007,7 @@ void MenuCRUD() {
                 MenuCRUD();
                 break;
             case 3:
-                EditIngredient();
+                EditMenuItemMenu();
                 MenuCRUD();
                 break;
             case 4:
