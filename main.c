@@ -3402,12 +3402,13 @@ void viewcart() {
             printf("%d. %s x %d - %d Baht\n", i + 1, cart[i].name, cart[i].quantity, cart[i].quantity * cart[i].cost);
             totalCost += cart[i].quantity * cart[i].cost;
         }
-        printf("---------------------------------------\n");
+        printf("-----------------------------------------------------------------------------------\n");
         printf("Total Cost: %d Baht\n", totalCost);
     }
-    printf("1. Purchase\n");
+    printf("\n1. Purchase\n");
     printf("2. Remove an item\n");
     printf("3. Back\n");
+    printf("-----------------------------------------------------------------------------------\n");
     printf("Enter your choice: ");
     scanf("%d", &choice);
     clearInputBuffer();
@@ -3548,12 +3549,13 @@ void viewItemDetails(int choice){
     int quantity;
             clearScreen();
             printf("===================================================================================\n");
-            printf("    %s\n", menu[choice].Name);
+            printf("%s\n", menu[choice].Name);
             printf("===================================================================================\n");
-            printf("%s\n", menu[choice].Description);
+            printf("Description : %s\n", menu[choice].Description);
             printf("Cost: %d Baht\n", menu[choice].Price);
-            printf("1. Add to cart.\n");
+            printf("\n1. Add to cart.\n");
             printf("2. Back to available items.\n");
+            printf("-----------------------------------------------------------------------------------\n");
             printf("Enter your choice : ");
             scanf("%d",&a);
             if(a == 1){
