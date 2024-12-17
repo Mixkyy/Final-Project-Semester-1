@@ -3688,11 +3688,7 @@ int timecheck() {
         }
     }
     // If not already purchased and today is Saturday, append today's date
-<<<<<<< HEAD
-    if (!alreadyPurchased && tm_info->tm_wday == 1) { // 6 = Saturday
-=======
     if (!alreadyPurchased && tm_info->tm_wday == 3) { // 6 = Saturday
->>>>>>> d78860d5750145e161c66db390ea934663dfa4ed
         fseek(file, 0, SEEK_END); // Move to end of file
         fprintf(file, "%s,1\n", today);
     }
