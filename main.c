@@ -1236,9 +1236,9 @@ void CreateNewMenuItem() {
 
     // UI to create a new menu item
     clearScreen();
-    printf("=======================================\n");
-    printf("          Create New Menu Item\n");
-    printf("=======================================\n");
+    printf("===================================================================================\n");
+    printf("                              Create New Menu Item\n");
+    printf("===================================================================================\n");
 
     printf("Menu item number: %d\n", nextMenuNumber);
 
