@@ -1236,9 +1236,9 @@ void CreateNewMenuItem() {
 
     // UI to create a new menu item
     clearScreen();
-    printf("=======================================\n");
-    printf("          Create New Menu Item\n");
-    printf("=======================================\n");
+    printf("===================================================================================\n");
+    printf("                              Create New Menu Item\n");
+    printf("===================================================================================\n");
 
     printf("Menu item number: %d\n", nextMenuNumber);
 
@@ -1904,11 +1904,11 @@ void ViewStock() {
     fclose(file);
 
     clearScreen();
-    printf("===================================================================================\n");
-    printf("                                    STOCK\n");
-    printf("===================================================================================\n");
+    printf("=======================================================================================================\n");
+    printf("                                            STOCK\n");
+    printf("=======================================================================================================\n");
     printf("ID      Name                                        Quantity    Unit    Re-stock Date  Expiry Date\n");
-    printf("-----------------------------------------------------------------------------------\n");
+    printf("-------------------------------------------------------------------------------------------------------\n");
 
     for (int i = 0; i < rowCount; i++) {
         printf("%-7s%-50s%-12d%-8s%-15s%-15s\n",
@@ -1920,7 +1920,7 @@ void ViewStock() {
                stock[i].expire[0] == '\0' ? "N/A" : stock[i].expire);
     }
 
-    printf("===================================================================================\n");
+    printf("=======================================================================================================\n");
     printf("Press Enter to return to the menu...\n");
     getchar();
 }
@@ -2726,6 +2726,7 @@ void ownerMenu() {
                 RestockFunction();
                 break;
             case 4:
+                mainLoggingMenu();
                 break;
             case 5:
                 ManageCouponsMenu();
@@ -3744,8 +3745,8 @@ int timecheck() {
             }
         }
     }
-    // If not already purchased and today is Saturday, append today's date
-    if (!alreadyPurchased && tm_info->tm_wday == 3) { // 6 = Saturday
+    
+    if (!alreadyPurchased && tm_info->tm_wday == 4) { // 4 = Thursday
         fseek(file, 0, SEEK_END); // Move to end of file
         fprintf(file, "%s,1\n", today);
     }
