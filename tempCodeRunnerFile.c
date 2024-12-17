@@ -1,4 +1,5 @@
 
+<<<<<<< HEAD
         fprintf(file, "%s,%s,%d,%s,%s,%s\n",
                 items[i].id,
                 items[i].name,
@@ -55,3 +56,6 @@ void displayCombinedStock(Item items[], int rowCount, char uniqueNames[][50], in
          if (strlen(unit) == 0) {
             if (strcmp(uniqueNames[i], "Roasted Pork") == 0 || strcmp(uniqueNames[i], "Roasted Chicken") == 0) {
                 strcpy(unit, "g");
+=======
+    while (getchar() != '\n');
+>>>>>>> 384deac9f17c31113b2b2f938c8e2df39dffc0d0
