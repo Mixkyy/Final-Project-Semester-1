@@ -2726,6 +2726,7 @@ void ownerMenu() {
                 RestockFunction();
                 break;
             case 4:
+                mainLoggingMenu();
                 break;
             case 5:
                 ManageCouponsMenu();
