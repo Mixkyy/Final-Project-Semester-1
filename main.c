@@ -28,8 +28,8 @@ void clearInputBuffer() {
 
 // View Discount Coupons
 
-#define MAX_ROWS 100    
-#define MAX_LINE_LENGTH 256
+#define MAX_ROWS 100
+#define MAX_LINE_LENGTH 512
 #define MAX_RECORDS 1000
 #define FLAG_FILE "flag.csv"
 
@@ -134,7 +134,7 @@ void loadSalesLog(const char *filename) {
 
 // Function to filter sales by product name
 void filterSalesByProductName(const char *productName) {
-    system(CLEAR);
+    clearScreen();
     printf("============================================================================================================\n");
     printf("                                        FILTER BY PRODUCT NAME                       \n");
     printf("============================================================================================================\n");
@@ -171,7 +171,7 @@ void filterSalesByProductName(const char *productName) {
 
 // Function to filter sales by price range
 void filterSalesByPriceRange(float minPrice, float maxPrice) {
-    system(CLEAR);
+    clearScreen();
     printf("======================================================================================================\n");
     printf("                                        FILTER BY PRICE RANGE                        \n");
     printf("======================================================================================================\n");
@@ -202,7 +202,7 @@ void filterSalesByPriceRange(float minPrice, float maxPrice) {
 
 // calculate daily summary
 void calculateDailySummary() {
-    system(CLEAR);  // Clear screen before showing daily summary
+    clearScreen();  // Clear screen before showing daily summary
     printf("========================================================\n");
     printf("                     DAILY SALES SUMMARY                \n");
     printf("========================================================\n");
@@ -261,7 +261,7 @@ void calculateDailySummary() {
 
 // Function to find the most sold product in a day
 void findMostSoldProductInDay(char *date) {
-    system(CLEAR);
+    clearScreen();
     printf("========================================================\n");
     printf("                  MOST SOLD PRODUCT IN A DAY            \n");
     printf("========================================================\n");
@@ -305,7 +305,7 @@ void findMostSoldProductInDay(char *date) {
 
 // Function to find the most sold product in a month
 void findMostSoldProductInMonth(const char *specificMonth) {
-    system(CLEAR);
+    clearScreen();
     printf("========================================================\n");
     printf("                 MOST SOLD PRODUCT IN A MONTH           \n");
     printf("========================================================\n");
@@ -362,7 +362,7 @@ void displayMenu() {
     char specificMonth[10];
 
     do {
-        system(CLEAR);  // Clear the screen before displaying the menu
+        clearScreen();  // Clear the screen before displaying the menu
         printf("========================================================\n");
         printf("                   SALES REPORT SYSTEM                  \n");
         printf("========================================================\n");
@@ -378,13 +378,13 @@ void displayMenu() {
 
         switch (choice) {
             case 1:
-                system(CLEAR);  // Clear screen for case 1
+                clearScreen();  // Clear screen for case 1
                 printf("\nEnter Product Name to Filter: ");
                 scanf(" %[^\n]", productName);
                 filterSalesByProductName(productName);
                 break;
             case 2:
-                system(CLEAR);  // Clear screen for case 2
+                clearScreen();  // Clear screen for case 2
                 printf("\nEnter Minimum Price: ");
                 scanf("%f", &minPrice);
                 printf("Enter Maximum Price: ");
@@ -395,28 +395,502 @@ void displayMenu() {
                 calculateDailySummary();  // Already clears screen
                 break;
             case 4:
-                system(CLEAR);  // Clear screen for case 4
+                clearScreen();  // Clear screen for case 4
                 printf("\nEnter Specific Date (YYYY-MM-DD): ");
                 scanf(" %[^\n]", specificDate);
                 findMostSoldProductInDay(specificDate);
                 break;
             case 5:
-                system(CLEAR);  // Clear screen for case 5
+                clearScreen();  // Clear screen for case 5
                 printf("\nEnter Specific Month (YYYY-MM): ");
                 scanf(" %[^\n]", specificMonth);
                 findMostSoldProductInMonth(specificMonth);
                 break;
             case 6:
-                system(CLEAR);  // Clear screen on exit
+                clearScreen();  // Clear screen on exit
                 printf("\nExiting the program. Goodbye!\n");
                 break;
             default:
-                system(CLEAR);  // Clear screen for invalid input
+                clearScreen();  // Clear screen for invalid input
                 printf("\nInvalid choice! Please try again.\n");
                 getchar();
                 getchar();
         }
     } while (choice != 6);
+}
+
+//Logging
+
+#define MAX_UNIT_LENGTH 20   // Maximum length for unit strings
+#define MAX_ITEMS 1000
+#define MAX_PRODUCTS 100
+#define MAX_EVENTS 200
+// Define the maximum sizes for the arrays
+#define MAX_STOCK 100
+#define MAX_SALES 100
+
+// Define StockItem structure
+typedef struct {
+    char id[20];
+    char name[50];
+    int quantity;
+    char unit[MAX_UNIT_LENGTH];
+    char restockDate[20];
+    char expireDate[20];
+} StockItemLogging;
+
+#define RESTOCK_EVENT 1
+#define SALES_EVENT 2
+
+// Define Stock structure
+typedef struct {
+    char id[20];
+    char name[50];
+    int quantity;
+    char unit[20];
+    char restock_date[20];
+    char expire_date[20];
+} StockLogging;
+
+// Define SalesLog structure
+typedef struct {
+    char timestamp[20];
+    char product_name[50];
+    int quantity_sold;
+    int total_price;
+} SalesLogging;
+
+// Define Event structure
+typedef struct {
+    char date[20];
+    int type;  // e.g., RESTOCK_EVENT = 1, SALES_EVENT = 2
+    char product_name[50];
+    int quantity;
+    int total_price;
+} EventLogging;
+
+StockItemLogging* stockItems = NULL;
+int stockCountLogging = 0;
+
+// void clearScreen() {
+// #ifdef _WIN32
+//     system("cls");
+// #else
+//     system("clear");
+// #endif
+// }
+
+int dateToInt(const char* date) {
+    int year, month, day;
+    if (sscanf(date, "%d-%d-%d", &year, &month, &day) != 3) {
+        fprintf(stderr, "Error: Invalid date format '%s'. Expected YYYY-MM-DD.\n", date);
+        return -1;  // Return an invalid value for error
+    }
+    return year * 10000 + month * 100 + day;
+}
+
+// Load stock data from a CSV file
+// Load stock data from CSV file
+void loadStockLogging(const char* filename) {
+    FILE* file = fopen(filename, "r");
+    if (!file) {
+        printf("Failed to open %s\n", filename);
+        return;
+    }
+
+    char line[MAX_LINE_LENGTH];
+    stockCountLogging = 0;
+    free(stockItems);
+    stockItems = NULL;
+
+    fgets(line, sizeof(line), file);  // Skip the header line
+
+    // Now, we start reading actual data from the file
+    while (fgets(line, sizeof(line), file)) {
+        StockItemLogging temp;
+        if (sscanf(line, "%[^,],%[^,],%d,%[^,],%[^,],%s", temp.id, temp.name, &temp.quantity,
+                   temp.unit, temp.restockDate, temp.expireDate) < 6) {
+            printf("Skipping invalid line: %s", line);
+            continue;
+        }
+
+        stockItems = realloc(stockItems, sizeof(StockItemLogging) * (stockCountLogging + 1));
+        stockItems[stockCountLogging++] = temp;
+    }
+
+    fclose(file);
+}
+
+
+// Save stock data to a CSV file
+void saveStockLogging(const char* filename) {
+    FILE* file = fopen(filename, "w");
+    if (!file) {
+        printf("Failed to open %s for writing\n", filename);
+        return;
+    }
+
+    fprintf(file, "id,name,quantity,unit,restock,expire\n");
+    for (int i = 0; i < stockCountLogging; i++) {
+        fprintf(file, "%s,%s,%d,%s,%s,%s\n",
+                stockItems[i].id,
+                stockItems[i].name,
+                stockItems[i].quantity,
+                stockItems[i].unit,
+                stockItems[i].restockDate,
+                stockItems[i].expireDate);
+    }
+
+    fclose(file);
+}
+
+// Comparison function for sorting by restock date (ascending)
+int compareByRestockDate(const void* a, const void* b) {
+    const StockItemLogging* itemA = (const StockItemLogging*)a;
+    const StockItemLogging* itemB = (const StockItemLogging*)b;
+
+    int dateA = dateToInt(itemA->restockDate);
+    int dateB = dateToInt(itemB->restockDate);
+
+    return dateA - dateB;
+}
+
+// Validate numeric input within a range
+int getValidChoice(int min, int max) {
+    int choice;
+    while (1) {
+        if (scanf("%d", &choice) == 1 && choice >= min && choice <= max) {
+            return choice;
+        }
+        printf("Invalid input. Please enter a number between %d and %d: ", min, max);
+        while (getchar() != '\n');  // Clear invalid input
+    }
+}
+
+// Display product restocks in a tabular format
+void showProductRestocks() {
+    clearScreen();  // Ensure we clear the screen before displaying product restocks
+    printf("===============================================================================\n");
+    printf("                              PRODUCT RESTOCKS\n");
+    printf("===============================================================================\n");
+
+    loadStockLogging("Stock.csv");
+
+    if (stockCountLogging == 0) {
+        printf("No stock data available.\n");
+        printf("===============================================================================\n");
+        printf("Press Enter to return to the menu...");
+        getchar();
+        getchar();  // Wait for user input
+        clearScreen();  // Clear the screen before returning
+        return;
+    }
+
+    // Find the maximum length for each column
+    int maxIdLen = 0, maxNameLen = 0, maxUnitLen = 0, maxRestockLen = 0, maxExpireLen = 0;
+    for (int i = 0; i < stockCountLogging; i++) {
+        maxIdLen = (strlen(stockItems[i].id) > maxIdLen) ? strlen(stockItems[i].id) : maxIdLen;
+        maxNameLen = (strlen(stockItems[i].name) > maxNameLen) ? strlen(stockItems[i].name) : maxNameLen;
+        maxUnitLen = (strlen(stockItems[i].unit) > maxUnitLen) ? strlen(stockItems[i].unit) : maxUnitLen;
+        maxRestockLen = (strlen(stockItems[i].restockDate) > maxRestockLen) ? strlen(stockItems[i].restockDate) : maxRestockLen;
+        maxExpireLen = (strlen(stockItems[i].expireDate) > maxExpireLen) ? strlen(stockItems[i].expireDate) : maxExpireLen;
+    }
+
+    // Print the header with dynamic column widths
+    printf("%-15s %-*s %-10s %-*s %-*s %-*s\n", 
+        "ID", maxNameLen + 2, "Name", "Quantity", maxUnitLen + 2, "Unit", maxRestockLen + 2, "Restock", maxExpireLen + 2, "Expire");
+    printf("-------------------------------------------------------------------------------\n");
+
+    qsort(stockItems, stockCountLogging, sizeof(StockItemLogging), compareByRestockDate);
+
+    for (int i = 0; i < stockCountLogging; i++) {
+        printf("%-15s %-*s %-10d %-*s %-*s %-*s\n",
+               stockItems[i].id,
+               maxNameLen + 2, stockItems[i].name,
+               stockItems[i].quantity,
+               maxUnitLen + 2, stockItems[i].unit,
+               maxRestockLen + 2, stockItems[i].restockDate,
+               maxExpireLen + 2, stockItems[i].expireDate);
+    }
+
+    printf("===============================================================================\n");
+    printf("Press Enter to return to the menu...");
+    getchar();
+    getchar();  // Wait for user input
+    clearScreen();  // Clear the screen before returning
+}
+
+
+typedef struct {
+    char dateTime[20];
+    char menuItem[100];
+    int amount;
+    double price;
+} PurchaseLogging;
+
+// Declare purchases array and count globally
+PurchaseLogging purchases[MAX_ITEMS];
+int purchaseCount = 0;
+
+
+long long dateTimeToInt(const char* dateTime) {
+    int year, month, day, hour, minute, second;
+    if (sscanf(dateTime, "%d-%d-%d %d:%d:%d", &year, &month, &day, &hour, &minute, &second) != 6) {
+        fprintf(stderr, "Error: Invalid date/time format '%s'.\n", dateTime);
+        return -1;  // Invalid date/time
+    }
+    return (long long)year * 10000000000LL + month * 100000000 + day * 1000000 +
+           hour * 10000 + minute * 100 + second;
+}
+
+// Comparison function for sorting by date/time (newest first)
+int compareByDateTime(const void* a, const void* b) {
+    const PurchaseLogging* pa = (const PurchaseLogging*)a;
+    const PurchaseLogging* pb = (const PurchaseLogging*)b;
+
+    long long dateA = dateTimeToInt(pa->dateTime);
+    long long dateB = dateTimeToInt(pb->dateTime);
+
+    return (dateB > dateA) - (dateB < dateA);  // Descending order
+}
+
+void showCustomerPurchases() {
+    clearScreen();  // Ensure we clear the screen before displaying customer purchases
+    printf("===========================================================================================\n");
+    printf("                                    CUSTOMER PURCHASES\n");
+    printf("===========================================================================================\n");
+
+    FILE *file = fopen("sales_log.csv", "r");
+    if (!file) {
+        printf("Failed to open sales_log.csv\n");
+        printf("===========================================================================================\n");
+        printf("Press Enter to return to the menu...");
+        getchar();
+        clearScreen();  // Clear the screen before returning
+        return;
+    }
+
+    char line[MAX_LINE_LENGTH];
+    purchaseCount = 0;
+
+    // Skip the header line if it exists
+    fgets(line, sizeof(line), file);
+
+    // Read the file line by line
+    while (fgets(line, sizeof(line), file) && purchaseCount < MAX_ITEMS) {
+        char dateTime[20], menuItem[100];
+        int amount;
+        double price;
+
+        // Parse the CSV line
+        if (sscanf(line, "%[^,],%[^,],%d,%lf", dateTime, menuItem, &amount, &price) == 4) {
+            strcpy(purchases[purchaseCount].dateTime, dateTime);
+            strcpy(purchases[purchaseCount].menuItem, menuItem);
+            purchases[purchaseCount].amount = amount;
+            purchases[purchaseCount].price = price;
+            purchaseCount++;
+        } else {
+            printf("Skipping invalid line: %s", line);
+        }
+    }
+
+    fclose(file);
+
+    // Sort the purchases by date/time
+    qsort(purchases, purchaseCount, sizeof(PurchaseLogging), compareByDateTime);
+
+    if (purchaseCount == 0) {
+        printf("No customer purchases found.\n");
+    } else {
+        double totalPurchase = 0.0;
+        int totalAmount = 0;
+
+        // Print the header with column names
+        printf("%-20s %-50s %-8s %-10s\n", "Date/Time", "Menu Item", "Amount", "Price");
+        printf("-------------------------------------------------------------------------------------------\n");
+
+        // Display the sorted data and calculate totals
+        for (int i = 0; i < purchaseCount; i++) {
+            printf("%-20s %-50s %-8d %-10.2f\n",
+                   purchases[i].dateTime, purchases[i].menuItem, purchases[i].amount, purchases[i].price);
+            totalPurchase += purchases[i].price;
+            totalAmount += purchases[i].amount;
+        }
+
+        printf("-------------------------------------------------------------------------------------------\n");
+        // Print totals under their respective columns
+        printf("%-72s%-8d %-10.2f\n", "Total:", totalAmount, totalPurchase);
+    }
+
+    printf("===========================================================================================\n");
+    printf("Press Enter to return to the menu...");
+    getchar();
+    getchar();  // Wait for user input
+    clearScreen();  // Clear the screen before returning
+}
+
+int compare_dates(const void *a, const void *b) {
+    EventLogging *eventA = (EventLogging *)a;
+    EventLogging *eventB = (EventLogging *)b;
+    return strcmp(eventA->date, eventB->date); // Lexicographical comparison of dates
+}
+
+// Trim function to remove leading/trailing whitespace
+void trim(char* str) {
+    int i = 0, j = strlen(str) - 1;
+
+    while (isspace((unsigned char)str[i])) i++;  // Leading whitespace
+    while (j > i && isspace((unsigned char)str[j])) j--;  // Trailing whitespace
+
+    memmove(str, str + i, j - i + 1);
+    str[j - i + 1] = '\0';
+}
+
+// Function to parse stock CSV file
+void parse_stock_csv(const char *filename, StockLogging stock[], int *stock_count, EventLogging events[], int *event_count) {
+    FILE *file = fopen(filename, "r");
+    if (file == NULL) {
+        printf("Error opening stock CSV file.\n");
+        exit(1);
+    }
+    
+    char line[MAX_LINE_LENGTH];
+    while (fgets(line, sizeof(line), file)) {
+        if (line[0] == '\0' || line[0] == '\n') continue;  // Skip empty lines
+        sscanf(line, "%[^,],%[^,],%d,%[^,],%[^,],%s",
+            stock[*stock_count].id, stock[*stock_count].name, &stock[*stock_count].quantity,
+            stock[*stock_count].unit, stock[*stock_count].restock_date, stock[*stock_count].expire_date);
+        
+        // Record a restock event
+        strcpy(events[*event_count].date, stock[*stock_count].restock_date);
+        events[*event_count].type = RESTOCK_EVENT;
+        strcpy(events[*event_count].product_name, stock[*stock_count].name);
+        events[*event_count].quantity = stock[*stock_count].quantity;
+        (*event_count)++;
+        
+        (*stock_count)++;
+    }
+    fclose(file);
+}
+
+// Function to parse sales log CSV file
+void parse_sales_log_csv(const char *filename, SalesLogging sales_log[], int *sales_count, EventLogging events[], int *event_count) {
+    FILE *file = fopen(filename, "r");
+    if (file == NULL) {
+        printf("Error opening sales log CSV file.\n");
+        exit(1);
+    }
+
+    char line[MAX_LINE_LENGTH];
+    while (fgets(line, sizeof(line), file)) {
+        if (line[0] == '\0' || line[0] == '\n') continue;  // Skip empty lines
+        sscanf(line, "%[^,],%[^,],%d,%d",
+            sales_log[*sales_count].timestamp, sales_log[*sales_count].product_name,
+            &sales_log[*sales_count].quantity_sold, &sales_log[*sales_count].total_price);
+        
+        // Record a sales event
+        strcpy(events[*event_count].date, sales_log[*sales_count].timestamp);
+        events[*event_count].type = SALES_EVENT;
+        strcpy(events[*event_count].product_name, sales_log[*sales_count].product_name);
+        events[*event_count].quantity = sales_log[*sales_count].quantity_sold;
+        events[*event_count].total_price = sales_log[*sales_count].total_price;
+        (*event_count)++;
+        
+        (*sales_count)++;
+    }
+    fclose(file);
+}
+
+// Function to generate and display the report
+void generate_stock_sales_report(void) {
+    StockLogging stock[MAX_PRODUCTS];
+    SalesLogging sales_log[MAX_PRODUCTS];
+    EventLogging events[MAX_EVENTS];
+    int stock_count = 0, sales_count = 0, event_count = 0;
+
+    // Parse the CSV files
+    parse_stock_csv("Stock.csv", stock, &stock_count, events, &event_count);
+    parse_sales_log_csv("sales_log.csv", sales_log, &sales_count, events, &event_count);
+
+    // Sort events by date
+    qsort(events, event_count, sizeof(EventLogging), compare_dates);
+    
+    // Display the report header
+    printf("===========================================================================================\n");
+    printf("                                    Stock and Sales Report      \n");
+    printf("===========================================================================================\n");
+    
+    printf("===========================================================================================\n");
+    printf("                                    Restock & Sales by Date         \n");
+    printf("===========================================================================================\n");
+
+    char current_date[20] = "";
+    
+    // Iterate through the events and print them grouped by date
+    for (int i = 0; i < event_count; i++) {
+        // Print the date header once per group
+        if (strcmp(events[i].date, current_date) != 0) {
+            strcpy(current_date, events[i].date);
+            printf("\nDate: %s\n", current_date);
+            printf("-------------------------------------------------------------------------------------------\n");
+            printf("Event Type    | Product Name                                 | Quantity | Total Price\n");
+            printf("-------------------------------------------------------------------------------------------\n");
+        }
+
+        // Print the event details with adjusted formatting
+        if (events[i].type == RESTOCK_EVENT) {
+            printf("Restock       | %-44s | %-8d | %-12s\n", events[i].product_name, events[i].quantity, "N/A");
+        } else if (events[i].type == SALES_EVENT) {
+            printf("Sale          | %-44s | %-8d | %-12d\n", events[i].product_name, events[i].quantity, events[i].total_price);
+        }
+    }
+    
+    printf("===========================================================================================\n");
+    printf("                                        End of Report             \n");
+    printf("===========================================================================================\n");
+}
+
+// Main menu
+void mainLoggingMenu() {
+    int choice;
+
+    do {
+        clearScreen();  // Optional: clear screen only if needed before showing the menu
+        printf("===============================================================================\n");
+        printf("                             Viewing Logs\n");
+        printf("===============================================================================\n");
+        printf("1. Product Restocks\n");
+        printf("2. Customer Purchases\n");
+        printf("3. Logging Report\n");  // Placeholder for Logging Report
+        printf("4. Exit\n");  // Now, Exit is Case 4
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+        getchar();  // to capture the newline character after scanf
+
+        switch (choice) {
+            case 1:
+                clearScreen();  // Clear screen before showing Product Restocks
+                showProductRestocks();
+                break;
+            case 2:
+                clearScreen();  // Clear screen before showing Customer Purchases
+                showCustomerPurchases();
+                break;
+            case 3:
+                generate_stock_sales_report();  // Removed clearScreen() here
+                printf("\nPress Enter to return to the menu...");
+                getchar();  // Wait for user input before returning to the menu
+                break;
+            case 4:
+                clearScreen();  // Clear screen before exiting
+                printf("Exiting program...\n");
+                break;
+            default:
+                clearScreen();
+                printf("Invalid choice. Please enter again.\n");
+                break;
+        }
+    } while (choice != 4);  // Exit the loop when user selects option 4
 }
 
 // Edit Coupon Function
@@ -2121,24 +2595,29 @@ void RestockChoice() {
     printf("===================================================================================\n");
     printf("                                Restock Menu\n");
     printf("===================================================================================\n");
-    printf("1. Hybrid Restock Option\n");
-    printf("2. Auto Restock Option\n");
-    printf("3. Manual Restock Option\n");
-    printf("4. Return To Owner Features\n");
+    printf("1. Auto Restock Notifications\n");
+    printf("2. Manual Restock Option\n");
+    printf("3. Return To Owner Features\n");
     printf("===================================================================================\n");
     printf("Enter your choice: ");
         scanf("%d", &RestockChoice);
         clearInputBuffer();
         switch (RestockChoice) {
             case 1:
+                clearScreen();
+                printf("===================================================================================\n");
+                printf("                           Auto Restock Notifications\n");
+                printf("===================================================================================\n");
+                
+                printf("===================================================================================\n");
                 break;
             case 2:
+            RestockFunction();
                 break;
             case 3:
-                RestockFunction();
-                break;
-            case 4:
                 return;
+            
+               
             default:
                 printf("Invalid choice. Please try again.\n");
                 printf("Press Enter to continue...");
@@ -2182,6 +2661,7 @@ void ownerMenu() {
                 RestockChoice();
                 break;
             case 4:
+                mainLoggingMenu();
                 break;
             case 5:
                 ManageCouponsMenu();
@@ -2216,11 +2696,30 @@ typedef struct {
     int amountPerUnit; // Amount of the ingredient needed per unit of menu
 } MenuIngredient;
 
+// Struct for Restock Rules
+typedef struct {
+    char name[50];
+    int threshold;
+    int restock_amount;
+    int expire_days;
+} RestockRule;
+
+// Struct for Stock Items
+typedef struct {
+    char id[10];
+    char name[50];
+    int quantity;
+    char unit[10];
+    char restockDate[20];
+    char expireDate[20];
+} StockItem;
+
 #define MAX_MENU_ITEMS 100
 MenuIngredient menuIngredients[MAX_MENU_ITEMS];
 int menuItemCount = 0;
 
-
+#define STOCK_FILE "Stock.csv"
+#define RESTOCK_FILE "RestockRules.csv"
 #define MAX_DISCOUNTS 10
 
 // Maximum cart size
@@ -2233,18 +2732,190 @@ int cartSize = 0;
 Discount discounts[MAX_DISCOUNTS];
 int discountCount = 10;
 
-typedef struct {
-    char id[10];          // Unique identifier
-    char name[50];        // Ingredient name
-    int quantity;         // Quantity available
-    char unit[10];        // Unit of measurement
-    char restockDate[11]; // Restock date
-    char expireDate[11];  // Expiration date
-} StockItem;
-
 #define MAX_STOCKS 100
 StockItem stocks[MAX_STOCKS];
 int stockCount = 0;
+
+int loadRestockRules(RestockRule rules[], int max_rules);
+int loadStock(StockItem stock[], int max_stock);
+void saveStock();
+void autoRestock(StockItem stock[], int *stock_count, RestockRule rules[], int rule_count);
+void addRestockedItem(StockItem stock[], int *stock_count, char *name, int restock_amount, int expire_days);
+
+// Load Restock Rules from RestockRules.csv
+int loadRestockRules(RestockRule rules[], int max_rules) {
+    FILE *file = fopen(RESTOCK_FILE, "r");
+    if (!file) {
+        printf("Error: Cannot open %s\n", RESTOCK_FILE);
+        return 0;
+    }
+
+    char line[100];
+    int count = 0;
+
+    // Skip header
+    fgets(line, sizeof(line), file);
+
+    while (fgets(line, sizeof(line), file) && count < max_rules) {
+        sscanf(line, "%49[^,],%d,%d,%d", 
+               rules[count].name, 
+               &rules[count].threshold, 
+               &rules[count].restock_amount, 
+               &rules[count].expire_days);
+        count++;
+    }
+
+    fclose(file);
+    return count;
+}
+
+// Load Stock from Stock.csv
+int loadStock(StockItem stock[], int max_stock) {
+    FILE *file = fopen(STOCK_FILE, "r");
+    if (!file) {
+        printf("Error: Cannot open %s\n", STOCK_FILE);
+        return 0;
+    }
+
+    char line[150];
+    int count = 0;
+
+    // Skip header
+    fgets(line, sizeof(line), file);
+
+    while (fgets(line, sizeof(line), file) && count < max_stock) {
+        sscanf(line, "%9[^,],%49[^,],%d,%9[^,],%19[^,],%19[^\n]", 
+               stock[count].id, 
+               stock[count].name, 
+               &stock[count].quantity, 
+               stock[count].unit, 
+               stock[count].restockDate, 
+               stock[count].expireDate);
+        count++;
+    }
+
+    fclose(file);
+    return count;
+}
+
+// Save Updated Stock to Stock.csv
+// Save only new stocks to Stock.csv
+// Save only new stocks (from auto restock) to Stock.csv
+void saveStock(const char* Stock) {
+    // Open the file in read+append mode
+    FILE* file = fopen("Stock.csv", "a+"); // "a+" allows reading and appending
+    if (file == NULL) {
+        perror("Error saving stock file");
+        return;
+    }
+
+    // Buffer to hold existing stock IDs in the file
+    char existingIDs[MAX_STOCKS][10]; 
+    int existingCount = 0;
+
+    // First, read all existing stock IDs into existingIDs[]
+    char line[256];
+    while (fgets(line, sizeof(line), file)) {
+        char id[10];
+        if (sscanf(line, "%9[^,]", id) == 1) {
+            strcpy(existingIDs[existingCount], id);
+            existingCount++;
+        }
+    }
+
+    // Append only new stock items (check if the ID already exists)
+    for (int i = 0; i < stockCount; i++) {
+        int isDuplicate = 0;
+
+        // Check if the current stock ID already exists in the file
+        for (int j = 0; j < existingCount; j++) {
+            if (strcmp(stocks[i].id, existingIDs[j]) == 0) {
+                isDuplicate = 1;
+                break;
+            }
+        }
+
+        // If not a duplicate, append it to the file
+        if (!isDuplicate) {
+            fprintf(file, "\n%s,%s,%d,%s,%s,%s",
+                    stocks[i].id,
+                    stocks[i].name,
+                    stocks[i].quantity,
+                    stocks[i].unit,
+                    stocks[i].restockDate,
+                    stocks[i].expireDate);
+        }
+    }
+
+    fclose(file); // Close the file
+}
+
+
+
+// Add Restocked Item to Stock
+void addRestockedItem(StockItem stock[], int *stock_count, char *name, int restock_amount, int expire_days) {
+    time_t t = time(NULL);
+    struct tm *tm_info = localtime(&t);
+    char restock_date[20], expire_date[20];
+    int countnewitem = 0;
+    // Get restock date
+    strftime(restock_date, sizeof(restock_date), "%Y-%m-%d", tm_info);
+
+    // Calculate expire date
+    tm_info->tm_mday += expire_days;
+    mktime(tm_info);
+    strftime(expire_date, sizeof(expire_date), "%Y-%m-%d", tm_info);
+
+    // Add new stock entry
+    StockItem new_item;
+    sprintf(new_item.id, "AUTO%03d", *stock_count + 1);
+    strcpy(new_item.name, name);
+    new_item.quantity = restock_amount;
+    strcpy(new_item.unit, "gram"); // Default unit
+    strcpy(new_item.restockDate, restock_date);
+    strcpy(new_item.expireDate, expire_date);
+
+
+    stock[*stock_count] = new_item;
+    (*stock_count)++;
+}
+
+// Perform Auto Restock
+void autoRestock(StockItem stock[], int *stock_count, RestockRule rules[], int rule_count) {
+    int total_quantity[50] = {0};
+    char unique_names[50][50];
+    int unique_count = 0;
+    int countnewitem = 0;
+
+    // Sum total quantities by name
+    for (int i = 0; i < *stock_count; i++) {
+        int found = 0;
+        for (int j = 0; j < unique_count; j++) {
+            if (strcmp(stock[i].name, unique_names[j]) == 0) {
+                total_quantity[j] += stock[i].quantity;
+                found = 1;
+                break;
+            }
+        }
+        if (!found) {
+            strcpy(unique_names[unique_count], stock[i].name);
+            total_quantity[unique_count] = stock[i].quantity;
+            unique_count++;
+        }
+    }
+
+    // Compare with Restock Rules and restock if necessary
+    for (int i = 0; i < rule_count; i++) {
+        for (int j = 0; j < unique_count; j++) {
+            if (strcmp(rules[i].name, unique_names[j]) == 0) {
+                if (total_quantity[j] < rules[i].threshold) {
+                    addRestockedItem(stock, stock_count, rules[i].name, rules[i].restock_amount, rules[i].expire_days);
+                    
+                }
+            }
+        }
+    }
+}
 
 // Function to compare dates (returns -1 if date1 < date2, 1 if date1 > date2, 0 if equal)
 int compareDates(const char* date1, const char* date2) {
@@ -2319,7 +2990,6 @@ void deductStock(const char* ingredient, int requiredQuantity) {
             if (requiredQuantity == 0) break;
         }
     }
-
     if (requiredQuantity > 0) {
         printf("Warning: Not enough %s in stock!\n", ingredient);
     }
@@ -2338,17 +3008,21 @@ void saveStockToCSV(const char* Stock) {
 
     // Write each stock item's details
     for (int i = 0; i < stockCount; i++) {
-        fprintf(file, "%s,%s,%d,%s,%s,%s\n",
+        fprintf(file, "%s,%s,%d,%s,%s,%s",
                 stocks[i].id,
                 stocks[i].name,
                 stocks[i].quantity,
                 stocks[i].unit,
                 stocks[i].restockDate,
                 stocks[i].expireDate);
+        if(i>stockCount){
+            fprintf(file,"\n");
+        }
     }
-
     fclose(file); // Close the file to ensure data is written
 }
+
+
 
 void loadMenuRequirementsFromCSV(const char* Ingredient) {
     FILE* file = fopen("Ingredient.csv", "r");
@@ -2410,6 +3084,14 @@ void CutStocks() {
 
     // Save the updated stock to file
     saveStockToCSV("Stock.csv");
+
+    // Load restock rules and perform auto restock
+    RestockRule restockRules[MAX_STOCKS];
+    int restockRuleCount = loadRestockRules(restockRules, MAX_STOCKS);
+    if (restockRuleCount > 0) {
+        autoRestock(stocks, &stockCount, restockRules, restockRuleCount);
+        saveStock("Stock.csv");  // Save stock after restocking
+    }
 }
 
 
@@ -2621,6 +3303,7 @@ void removeFromCart(int index) {
     cartSize--; // ลดขนาดของ cart 
 
 }
+
 
 
 void viewcart() {
@@ -3005,7 +3688,11 @@ int timecheck() {
         }
     }
     // If not already purchased and today is Saturday, append today's date
+<<<<<<< HEAD
     if (!alreadyPurchased && tm_info->tm_wday == 1) { // 6 = Saturday
+=======
+    if (!alreadyPurchased && tm_info->tm_wday == 3) { // 6 = Saturday
+>>>>>>> d78860d5750145e161c66db390ea934663dfa4ed
         fseek(file, 0, SEEK_END); // Move to end of file
         fprintf(file, "%s,1\n", today);
     }
@@ -3044,13 +3731,14 @@ void autoCutStocks() {
     saveStockToCSV("Stock.csv");
 }
 int autoPurchased(){
-    int a = 1;
+    int a=1;
     if (timecheck()) {
         autoCutStocks();  // Simulate cutting stock
-        return a;         // Return 1 if auto-purchase is successful
+        return a;
     } else {
-        return 0;         // Return 0 if no auto-purchase is done
+        return 0;
     }
+    
 }
 
 // Main Menu
@@ -3066,7 +3754,7 @@ void mainMenu() {
         printf("2. Customer Features\n");
         printf("3. Exit\n");
         printf("-----------------------------------------------------------------------------------\n");
-        if (autoPurchased()==1){
+         if (autoPurchased()==1){
             
             printf("--Auto Purchased x1 All In One Non-Seafood--\n");
             printf("-----------------------------------------------------------------------------------\n");

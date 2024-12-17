@@ -1,0 +1,12 @@
+name,threshold,restock_amount,expire_days
+Noodles,10000,60000,7
+Roasted Pork,5000,20000,7
+Roasted Chicken,5000,20000,7
+Shrimp Wonton,10,60,3
+Pork Wonton,10,60,3
+Vegetables,5000,20000,2
+Egg,10,50,7
+Minced Pork,2000,10000,3
+Crispy Pork,2000,10000,1
+Crab,5000,15000,3
+Shrimp,5000,15000,3

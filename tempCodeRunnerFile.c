@@ -1,2 +1,1 @@
-
-    while (getchar() != '\n');
+stockCountLogging
