@@ -1,89 +1,89 @@
-﻿name,ingredientName,amountPerUnit
-Roasted Pork Noodles,Noodles,75
-Roasted Pork Noodles,Roasted Pork,40
-Roasted Pork Noodles,Roasted Chicken,0
-Roasted Pork Noodles,Shrimp Wonton,0
-Roasted Pork Noodles,Pork Wonton,0
-Roasted Pork Noodles,Vegetables,10
-Roasted Pork Noodles,Egg,0
-Roasted Pork Noodles,Minced Pork,0
-Roasted Pork Noodles,Crispy Pork,0
-Roasted Pork Noodles,Crab,0
-Roasted Pork Noodles,Shrimp,0
-Roasted Pork Noodles with Shrimp Wonton,Noodles,75
-Roasted Pork Noodles with Shrimp Wonton,Roasted Pork,40
-Roasted Pork Noodles with Shrimp Wonton,Roasted Chicken,0
-Roasted Pork Noodles with Shrimp Wonton,Shrimp Wonton,3
-Roasted Pork Noodles with Shrimp Wonton,Pork Wonton,0
-Roasted Pork Noodles with Shrimp Wonton,Vegetables,10
-Roasted Pork Noodles with Shrimp Wonton,Egg,0
-Roasted Pork Noodles with Shrimp Wonton,Minced Pork,0
-Roasted Pork Noodles with Shrimp Wonton,Crispy Pork,0
-Roasted Pork Noodles with Shrimp Wonton,Crab,0
-Roasted Pork Noodles with Shrimp Wonton,Shrimp,0
-Roasted Chicken Noodles with Shrimp Wonton,Noodles,75
-Roasted Chicken Noodles with Shrimp Wonton,Roasted Pork,0
-Roasted Chicken Noodles with Shrimp Wonton,Roasted Chicken,40
-Roasted Chicken Noodles with Shrimp Wonton,Shrimp Wonton,3
-Roasted Chicken Noodles with Shrimp Wonton,Pork Wonton,0
-Roasted Chicken Noodles with Shrimp Wonton,Vegetables,10
-Roasted Chicken Noodles with Shrimp Wonton,Egg,0
-Roasted Chicken Noodles with Shrimp Wonton,Minced Pork,0
-Roasted Chicken Noodles with Shrimp Wonton,Crispy Pork,0
-Roasted Chicken Noodles with Shrimp Wonton,Crab,0
-Roasted Chicken Noodles with Shrimp Wonton,Shrimp,0
-Shrimp Noodles with Egg,Noodles,75
-Shrimp Noodles with Egg,Roasted Pork,0
-Shrimp Noodles with Egg,Roasted Chicken,0
-Shrimp Noodles with Egg,Shrimp Wonton,0
-Shrimp Noodles with Egg,Pork Wonton,0
-Shrimp Noodles with Egg,Vegetables,10
-Shrimp Noodles with Egg,Egg,1
-Shrimp Noodles with Egg,Minced Pork,0
-Shrimp Noodles with Egg,Crispy Pork,0
-Shrimp Noodles with Egg,Crab,0
-Shrimp Noodles with Egg,Shrimp,60
-Crab Noodles with Shrimp Wonton,Noodles,75
-Crab Noodles with Shrimp Wonton,Roasted Pork,0
-Crab Noodles with Shrimp Wonton,Roasted Chicken,0
-Crab Noodles with Shrimp Wonton,Shrimp Wonton,3
-Crab Noodles with Shrimp Wonton,Pork Wonton,0
-Crab Noodles with Shrimp Wonton,Vegetables,10
-Crab Noodles with Shrimp Wonton,Egg,0
-Crab Noodles with Shrimp Wonton,Minced Pork,0
-Crab Noodles with Shrimp Wonton,Crispy Pork,0
-Crab Noodles with Shrimp Wonton,Crab,30
-Crab Noodles with Shrimp Wonton,Shrimp,0
-All In One Non-Seafood,Noodles,75
-All In One Non-Seafood,Roasted Pork,40
-All In One Non-Seafood,Roasted Chicken,40
-All In One Non-Seafood,Shrimp Wonton,3
-All In One Non-Seafood,Pork Wonton,3
-All In One Non-Seafood,Vegetables,10
-All In One Non-Seafood,Egg,0
-All In One Non-Seafood,Minced Pork,20
-All In One Non-Seafood,Crispy Pork,0
-All In One Non-Seafood,Crab,0
-All In One Non-Seafood,Shrimp,0
-Crispy Pork Noodles with Pork Wonton,Noodles,75
-Crispy Pork Noodles with Pork Wonton,Roasted Pork,0
-Crispy Pork Noodles with Pork Wonton,Roasted Chicken,0
-Crispy Pork Noodles with Pork Wonton,Shrimp Wonton,0
-Crispy Pork Noodles with Pork Wonton,Pork Wonton,3
-Crispy Pork Noodles with Pork Wonton,Vegetables,10
-Crispy Pork Noodles with Pork Wonton,Egg,0
-Crispy Pork Noodles with Pork Wonton,Minced Pork,0
-Crispy Pork Noodles with Pork Wonton,Crispy Pork,30
-Crispy Pork Noodles with Pork Wonton,Crab,0
-Crispy Pork Noodles with Pork Wonton,Shrimp,0
-Minced Pork Noodles with Pork Wonton,Noodles,75
-Minced Pork Noodles with Pork Wonton,Roasted Pork,0
-Minced Pork Noodles with Pork Wonton,Roasted Chicken,0
-Minced Pork Noodles with Pork Wonton,Shrimp Wonton,0
-Minced Pork Noodles with Pork Wonton,Pork Wonton,3
-Minced Pork Noodles with Pork Wonton,Vegetables,10
-Minced Pork Noodles with Pork Wonton,Egg,0
-Minced Pork Noodles with Pork Wonton,Minced Pork,20
-Minced Pork Noodles with Pork Wonton,Crispy Pork,0
-Minced Pork Noodles with Pork Wonton,Crab,0
-Minced Pork Noodles with Pork Wonton,Shrimp,0
+﻿name,ingredientName,0.00
+Roasted Pork Noodles,Noodles,75.00
+Roasted Pork Noodles,Roasted Pork,40.00
+Roasted Pork Noodles,Roasted Chicken,0.00
+Roasted Pork Noodles,Shrimp Wonton,0.00
+Roasted Pork Noodles,Pork Wonton,0.00
+Roasted Pork Noodles,Vegetables,10.00
+Roasted Pork Noodles,Egg,0.00
+Roasted Pork Noodles,Minced Pork,0.00
+Roasted Pork Noodles,Crispy Pork,0.00
+Roasted Pork Noodles,Crab,0.00
+Roasted Pork Noodles,Shrimp,0.00
+Roasted Pork Noodles with Shrimp Wonton,Noodles,75.00
+Roasted Pork Noodles with Shrimp Wonton,Roasted Pork,40.00
+Roasted Pork Noodles with Shrimp Wonton,Roasted Chicken,0.00
+Roasted Pork Noodles with Shrimp Wonton,Shrimp Wonton,3.00
+Roasted Pork Noodles with Shrimp Wonton,Pork Wonton,0.00
+Roasted Pork Noodles with Shrimp Wonton,Vegetables,10.00
+Roasted Pork Noodles with Shrimp Wonton,Egg,0.00
+Roasted Pork Noodles with Shrimp Wonton,Minced Pork,0.00
+Roasted Pork Noodles with Shrimp Wonton,Crispy Pork,0.00
+Roasted Pork Noodles with Shrimp Wonton,Crab,0.00
+Roasted Pork Noodles with Shrimp Wonton,Shrimp,0.00
+Roasted Chicken Noodles with Shrimp Wonton,Noodles,75.00
+Roasted Chicken Noodles with Shrimp Wonton,Roasted Pork,0.00
+Roasted Chicken Noodles with Shrimp Wonton,Roasted Chicken,40.00
+Roasted Chicken Noodles with Shrimp Wonton,Shrimp Wonton,3.00
+Roasted Chicken Noodles with Shrimp Wonton,Pork Wonton,0.00
+Roasted Chicken Noodles with Shrimp Wonton,Vegetables,10.00
+Roasted Chicken Noodles with Shrimp Wonton,Egg,0.00
+Roasted Chicken Noodles with Shrimp Wonton,Minced Pork,0.00
+Roasted Chicken Noodles with Shrimp Wonton,Crispy Pork,0.00
+Roasted Chicken Noodles with Shrimp Wonton,Crab,0.00
+Roasted Chicken Noodles with Shrimp Wonton,Shrimp,0.00
+Shrimp Noodles with Egg,Noodles,75.00
+Shrimp Noodles with Egg,Roasted Pork,0.00
+Shrimp Noodles with Egg,Roasted Chicken,0.00
+Shrimp Noodles with Egg,Shrimp Wonton,0.00
+Shrimp Noodles with Egg,Pork Wonton,0.00
+Shrimp Noodles with Egg,Vegetables,10.00
+Shrimp Noodles with Egg,Egg,1.00
+Shrimp Noodles with Egg,Minced Pork,0.00
+Shrimp Noodles with Egg,Crispy Pork,0.00
+Shrimp Noodles with Egg,Crab,0.00
+Shrimp Noodles with Egg,Shrimp,60.00
+Crab Noodles with Shrimp Wonton,Noodles,75.00
+Crab Noodles with Shrimp Wonton,Roasted Pork,0.00
+Crab Noodles with Shrimp Wonton,Roasted Chicken,0.00
+Crab Noodles with Shrimp Wonton,Shrimp Wonton,3.00
+Crab Noodles with Shrimp Wonton,Pork Wonton,0.00
+Crab Noodles with Shrimp Wonton,Vegetables,10.00
+Crab Noodles with Shrimp Wonton,Egg,0.00
+Crab Noodles with Shrimp Wonton,Minced Pork,0.00
+Crab Noodles with Shrimp Wonton,Crispy Pork,0.00
+Crab Noodles with Shrimp Wonton,Crab,30.00
+Crab Noodles with Shrimp Wonton,Shrimp,0.00
+All In One Non-Seafood,Noodles,75.00
+All In One Non-Seafood,Roasted Pork,40.00
+All In One Non-Seafood,Roasted Chicken,40.00
+All In One Non-Seafood,Shrimp Wonton,3.00
+All In One Non-Seafood,Pork Wonton,3.00
+All In One Non-Seafood,Vegetables,10.00
+All In One Non-Seafood,Egg,0.00
+All In One Non-Seafood,Minced Pork,20.00
+All In One Non-Seafood,Crispy Pork,0.00
+All In One Non-Seafood,Crab,0.00
+All In One Non-Seafood,Shrimp,0.00
+Crispy Pork Noodles with Pork Wonton,Noodles,75.00
+Crispy Pork Noodles with Pork Wonton,Roasted Pork,0.00
+Crispy Pork Noodles with Pork Wonton,Roasted Chicken,0.00
+Crispy Pork Noodles with Pork Wonton,Shrimp Wonton,0.00
+Crispy Pork Noodles with Pork Wonton,Pork Wonton,3.00
+Crispy Pork Noodles with Pork Wonton,Vegetables,10.00
+Crispy Pork Noodles with Pork Wonton,Egg,0.00
+Crispy Pork Noodles with Pork Wonton,Minced Pork,0.00
+Crispy Pork Noodles with Pork Wonton,Crispy Pork,30.00
+Crispy Pork Noodles with Pork Wonton,Crab,0.00
+Crispy Pork Noodles with Pork Wonton,Shrimp,0.00
+Minced Pork Noodles with Pork Wonton,Noodles,75.00
+Minced Pork Noodles with Pork Wonton,Roasted Pork,0.00
+Minced Pork Noodles with Pork Wonton,Roasted Chicken,0.00
+Minced Pork Noodles with Pork Wonton,Shrimp Wonton,0.00
+Minced Pork Noodles with Pork Wonton,Pork Wonton,3.00
+Minced Pork Noodles with Pork Wonton,Vegetables,10.00
+Minced Pork Noodles with Pork Wonton,Egg,0.00
+Minced Pork Noodles with Pork Wonton,Minced Pork,20.00
+Minced Pork Noodles with Pork Wonton,Crispy Pork,0.00
+Minced Pork Noodles with Pork Wonton,Crab,0.00
+Minced Pork Noodles with Pork Wonton,Shrimp,0.00

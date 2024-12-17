@@ -4,6 +4,12 @@
 #include <ctype.h>
 #include <time.h>
 
+ #ifdef _WIN32
+    #define CLEAR "cls"
+#else
+    #define CLEAR "clear"
+#endif
+
 // Function to clear the terminal
 
 void clearScreen() {
@@ -20,11 +26,11 @@ void clearInputBuffer() {
     while (getchar() != '\n');
 }
 
-
 // View Discount Coupons
 
 #define MAX_ROWS 100
 #define MAX_LINE_LENGTH 256
+#define MAX_RECORDS 1000
 
 typedef struct {
     char code[20];
@@ -50,6 +56,13 @@ typedef struct {
     char restock[20];
     char expire[20];
 } Item;
+
+typedef struct {
+    char date[20];
+    char productName[50];
+    int quantity;
+    float totalPrice;
+} SaleRecord;
 
 // Declare Functions for Restock
 
@@ -89,6 +102,320 @@ int readDiscountCoupons(const char *filename, DiscountCoupon coupons[], int *row
 
     fclose(file);
     return 1;
+}
+// View Reports
+
+SaleRecord sales[MAX_RECORDS];
+int salesCount = 0;
+
+// Function to load sales log from CSV file
+void loadSalesLog(const char *filename) {
+    FILE *file = fopen(filename, "r");
+    if (!file) {
+        printf("Error: Unable to open file %s\n", filename);
+        return;
+    }
+
+    char line[MAX_LINE_LENGTH];
+    while (fgets(line, sizeof(line), file)) {
+        if (salesCount >= MAX_RECORDS) {
+            printf("Warning: Maximum sales records reached.\n");
+            break;
+        }
+        
+        SaleRecord *record = &sales[salesCount];
+        sscanf(line, "%[^,],%[^,],%d,%f", record->date, record->productName, &record->quantity, &record->totalPrice);
+        salesCount++;
+    }
+
+    fclose(file);
+}
+
+// Function to filter sales by product name
+void filterSalesByProductName(const char *productName) {
+    system(CLEAR);
+    printf("============================================================================================================\n");
+    printf("                                        FILTER BY PRODUCT NAME                       \n");
+    printf("============================================================================================================\n");
+    printf("\nSales Report for Product: %s\n", productName);
+    printf("%-20s %-50s %15s %15s\n", "Date", "Product Name", "Quantity", "Total Price");
+    printf("------------------------------------------------------------------------------------------------------------\n");
+
+    int found = 0;
+    int totalQuantity = 0;  // To track total quantity
+    float totalPrice = 0.0; // To track total price
+
+    for (int i = 0; i < salesCount; i++) {
+        if (strstr(sales[i].productName, productName)) {
+            printf("%-20s %-50s %15d %15.2f\n",
+                   sales[i].date, sales[i].productName, sales[i].quantity, sales[i].totalPrice);
+            totalQuantity += sales[i].quantity;
+            totalPrice += sales[i].totalPrice;
+            found = 1;
+        }
+    }
+
+    if (found) {
+        printf("------------------------------------------------------------------------------------------------------------\n");
+        printf("%-70s %16d %15.2f\n", "Total:", totalQuantity, totalPrice);
+    } else {
+        printf("No sales records found for the product name '%s'.\n", productName);
+    }
+
+    printf("\nPress Enter to return to the menu...");
+    getchar();
+    getchar();
+}
+
+
+// Function to filter sales by price range
+void filterSalesByPriceRange(float minPrice, float maxPrice) {
+    system(CLEAR);
+    printf("======================================================================================================\n");
+    printf("                                        FILTER BY PRICE RANGE                        \n");
+    printf("======================================================================================================\n");
+    printf("------------------------------------------------------------------------------------------------------\n");
+    printf("Sales Report for Price Range: %.2f - %.2f\n", minPrice, maxPrice);
+    printf("------------------------------------------------------------------------------------------------------\n");
+    printf("%-20s %-50s %-15s %-15s\n", "Date", "Product Name", "Quantity", "Total Price");
+    printf("------------------------------------------------------------------------------------------------------\n");
+
+    int found = 0;
+    for (int i = 0; i < salesCount; i++) {
+        if (sales[i].totalPrice >= minPrice && sales[i].totalPrice <= maxPrice) {
+            printf("%-20s %-50s %-15d %-15.2f\n",
+                   sales[i].date, sales[i].productName, sales[i].quantity, sales[i].totalPrice);
+            found = 1;
+        }
+    }
+
+    if (!found) {
+        printf("No sales records found for the price range %.2f - %.2f.\n", minPrice, maxPrice);
+    }
+
+    printf("\nPress Enter to return to the menu...");
+    getchar();
+    getchar();
+}
+
+
+// calculate daily summary
+void calculateDailySummary() {
+    system(CLEAR);  // Clear screen before showing daily summary
+    printf("========================================================\n");
+    printf("                     DAILY SALES SUMMARY                \n");
+    printf("========================================================\n");
+    printf("\n%-20s %-10s %-10s\n", "Date", "Total Qty", "Total Sales");
+    printf("-----------------------------------------------\n");
+
+    float dailySales[MAX_RECORDS] = {0};
+    int dailyQuantity[MAX_RECORDS] = {0};
+    char dates[MAX_RECORDS][20];
+    int uniqueDates = 0;
+
+    float grandTotalSales = 0.0f;  // To track overall sales
+    int grandTotalQuantity = 0;   // To track overall quantity
+
+    for (int i = 0; i < salesCount; i++) {
+        int dateIndex = -1;
+
+        // Check if the date already exists
+        for (int j = 0; j < uniqueDates; j++) {
+            if (strcmp(sales[i].date, dates[j]) == 0) {
+                dateIndex = j;
+                break;
+            }
+        }
+
+        // If date is not found, add it to the list of unique dates
+        if (dateIndex == -1) {
+            strcpy(dates[uniqueDates], sales[i].date);
+            dateIndex = uniqueDates;
+            uniqueDates++;
+        }
+
+        // Add sales and quantity to the appropriate date
+        dailySales[dateIndex] += sales[i].totalPrice;
+        dailyQuantity[dateIndex] += sales[i].quantity;
+
+        // Update grand totals
+        grandTotalSales += sales[i].totalPrice;
+        grandTotalQuantity += sales[i].quantity;
+    }
+
+    // Print daily summaries
+    for (int i = 0; i < uniqueDates; i++) {
+        printf("%-20s %-10d %-10.2f\n", dates[i], dailyQuantity[i], dailySales[i]);
+    }
+
+    printf("-----------------------------------------------\n");
+    // Print overall totals
+    printf("%-20s %-10d %-10.2f\n", "Overall Totals", grandTotalQuantity, grandTotalSales);
+
+    printf("\nPress Enter to return to the menu...");
+    getchar();
+    getchar();}
+
+
+
+// Function to find the most sold product in a day
+void findMostSoldProductInDay(char *date) {
+    system(CLEAR);
+    printf("========================================================\n");
+    printf("                  MOST SOLD PRODUCT IN A DAY            \n");
+    printf("========================================================\n");
+    printf("\nSales Report for Date: %s\n", date);
+
+    int maxQuantity = 0;
+    char mostSoldProduct[50] = "";
+    int found = 0;
+
+    // Iterate over all sales records
+    for (int i = 0; i < salesCount; i++) {
+        // Extract the date part (first 10 characters) from the full date-time string
+        char saleDate[11];
+        strncpy(saleDate, sales[i].date, 10); // Copy the first 10 characters (YYYY-MM-DD)
+        saleDate[10] = '\0'; // Null-terminate the string
+
+        // Check if the sale date matches the input date
+        if (strcmp(saleDate, date) == 0) {
+            found = 1;
+            if (sales[i].quantity > maxQuantity) {
+                maxQuantity = sales[i].quantity;
+                strcpy(mostSoldProduct, sales[i].productName);
+            }
+        }
+    }
+
+    if (found) {
+        printf("Most Sold Product: %s\n", mostSoldProduct);
+        printf("Quantity Sold: %d\n", maxQuantity);
+    } else {
+        printf("No sales records found for the date '%s'.\n", date);
+    }
+
+    printf("\nPress Enter to return to the menu...");
+    getchar();
+    getchar();
+}
+
+
+
+
+// Function to find the most sold product in a month
+void findMostSoldProductInMonth(const char *specificMonth) {
+    system(CLEAR);
+    printf("========================================================\n");
+    printf("                 MOST SOLD PRODUCT IN A MONTH           \n");
+    printf("========================================================\n");
+    printf("\nSales Report for Month: %s\n", specificMonth);
+
+    char mostSoldProduct[50] = "";
+    int maxQuantity = 0;
+    int monthlyQuantity[MAX_RECORDS] = {0};
+    char products[MAX_RECORDS][50];
+    int productCount = 0;
+
+    for (int i = 0; i < salesCount; i++) {
+        if (strncmp(sales[i].date, specificMonth, 7) == 0) {
+            int productIndex = -1;
+            for (int j = 0; j < productCount; j++) {
+                if (strcmp(products[j], sales[i].productName) == 0) {
+                    productIndex = j;
+                    break;
+                }
+            }
+
+            if (productIndex == -1) {
+                strcpy(products[productCount], sales[i].productName);
+                productIndex = productCount;
+                productCount++;
+            }
+
+            monthlyQuantity[productIndex] += sales[i].quantity;
+            if (monthlyQuantity[productIndex] > maxQuantity) {
+                maxQuantity = monthlyQuantity[productIndex];
+                strcpy(mostSoldProduct, products[productIndex]);
+            }
+        }
+    }
+
+    if (maxQuantity > 0) {
+        printf("Most Sold Product: %s\n", mostSoldProduct);
+        printf("Quantity Sold: %d\n", maxQuantity);
+    } else {
+        printf("No sales records found for the month '%s'.\n", specificMonth);
+    }
+
+    printf("\nPress Enter to return to the menu...");
+    getchar();
+    getchar();
+}
+
+// Main function to display menu and interact with the user
+void displayMenu() {
+    int choice;
+    char productName[50];
+    float minPrice, maxPrice;
+    char specificDate[20];
+    char specificMonth[10];
+
+    do {
+        system(CLEAR);  // Clear the screen before displaying the menu
+        printf("========================================================\n");
+        printf("                   SALES REPORT SYSTEM                  \n");
+        printf("========================================================\n");
+        printf("1. Filter Sales by Product Name\n");
+        printf("2. Filter Sales by Price Range\n");
+        printf("3. Daily Sales Summary\n");
+        printf("4. Most Sold Product in a Day\n");
+        printf("5. Most Sold Product in a Month\n");
+        printf("6. Exit\n");
+        printf("========================================================\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1:
+                system(CLEAR);  // Clear screen for case 1
+                printf("\nEnter Product Name to Filter: ");
+                scanf(" %[^\n]", productName);
+                filterSalesByProductName(productName);
+                break;
+            case 2:
+                system(CLEAR);  // Clear screen for case 2
+                printf("\nEnter Minimum Price: ");
+                scanf("%f", &minPrice);
+                printf("Enter Maximum Price: ");
+                scanf("%f", &maxPrice);
+                filterSalesByPriceRange(minPrice, maxPrice);
+                break;
+            case 3:
+                calculateDailySummary();  // Already clears screen
+                break;
+            case 4:
+                system(CLEAR);  // Clear screen for case 4
+                printf("\nEnter Specific Date (YYYY-MM-DD): ");
+                scanf(" %[^\n]", specificDate);
+                findMostSoldProductInDay(specificDate);
+                break;
+            case 5:
+                system(CLEAR);  // Clear screen for case 5
+                printf("\nEnter Specific Month (YYYY-MM): ");
+                scanf(" %[^\n]", specificMonth);
+                findMostSoldProductInMonth(specificMonth);
+                break;
+            case 6:
+                system(CLEAR);  // Clear screen on exit
+                printf("\nExiting the program. Goodbye!\n");
+                break;
+            default:
+                system(CLEAR);  // Clear screen for invalid input
+                printf("\nInvalid choice! Please try again.\n");
+                getchar();
+                getchar();
+        }
+    } while (choice != 6);
 }
 
 // Edit Coupon Function
@@ -1821,6 +2148,7 @@ void RestockChoice() {
 }
 
 
+
 // Owner Menu
 
 void ownerMenu() {
@@ -1843,6 +2171,8 @@ void ownerMenu() {
 
         switch (ownerChoice) {
             case 1:
+                loadSalesLog("sales_log.csv");
+                displayMenu();
                 break;
             case 2:
                 CRUDoperationMenu();
@@ -2227,6 +2557,7 @@ void loadMenuRequirementsFromCSV(const char* Ingredient) {
 
     fclose(file);
 }
+
 
 void CutStocks() {
     for (int i = 0; i < cartSize; i++) {
