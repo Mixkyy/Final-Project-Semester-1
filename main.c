@@ -861,16 +861,16 @@ void DeleteMenuItem() {
     MenuItem menu[MAX_ROWS];
     int rowCount = 0;
 
+    // Read from Menu.csv
     FILE *file = fopen("Menu.csv", "r");
     if (!file) {
-        perror("Error opening file");
+        perror("Error opening Menu.csv");
         return;
     }
 
     char line[MAX_LINE_LENGTH];
     int isHeader = 1;
 
-    // Read all menu items into the array
     while (fgets(line, sizeof(line), file)) {
         if (isHeader) {
             isHeader = 0;
@@ -885,9 +885,9 @@ void DeleteMenuItem() {
 
         rowCount++;
     }
-
     fclose(file);
 
+    // Display menu for deletion
     clearScreen();
     printf("===================================================================================\n");
     printf("                                       MENU\n");
@@ -895,7 +895,6 @@ void DeleteMenuItem() {
     printf("Code    Name                                             Price     Description\n");
     printf("-----------------------------------------------------------------------------------\n");
 
-    // Display all menu items
     for (int i = 0; i < rowCount; i++) {
         printf("%-7s%-50s%-10.2f%-30s\n",
                menu[i].code,
@@ -906,7 +905,7 @@ void DeleteMenuItem() {
 
     printf("===================================================================================\n");
     printf("Enter the code of the menu item to delete: ");
-    
+
     char codeToDelete[20];
     fgets(codeToDelete, sizeof(codeToDelete), stdin);
     codeToDelete[strcspn(codeToDelete, "\n")] = '\0';
@@ -918,31 +917,64 @@ void DeleteMenuItem() {
     }
 
     int found = 0;
-    int newCode = 1;
-
-    // Write the header to the temporary file
-    fprintf(tempFile, "Code,Name,Price,Description\n");
-
-    // Write remaining items with rearranged codes
     for (int i = 0; i < rowCount; i++) {
         if (strcmp(menu[i].code, codeToDelete) != 0) {
-            fprintf(tempFile, "%d,%s,%.2f,%s\n",
-                    newCode, // Rearrange the code sequentially
+            fprintf(tempFile, "%s,%s,%.2f,%s\n",
+                    menu[i].code,
                     menu[i].name,
                     menu[i].price,
                     menu[i].description);
-            newCode++;
         } else {
             found = 1;
         }
     }
-
     fclose(tempFile);
 
+    // Update Menu.csv
     if (found) {
         remove("Menu.csv");
         rename("TempMenu.csv", "Menu.csv");
         printf("Menu item with code '%s' deleted successfully!\n", codeToDelete);
+
+        // Delete related records from Ingredient.csv
+        FILE *ingredientFile = fopen("Ingredient.csv", "r");
+        if (!ingredientFile) {
+            perror("Error opening Ingredient.csv");
+            return;
+        }
+
+        FILE *tempIngredientFile = fopen("TempIngredient.csv", "w");
+        if (!tempIngredientFile) {
+            perror("Error creating temporary Ingredient file");
+            fclose(ingredientFile);
+            return;
+        }
+
+        while (fgets(line, sizeof(line), ingredientFile)) {
+            char menuName[100], ingredientName[50];
+            double amount;
+
+            sscanf(line, "%[^,],%[^,],%lf", menuName, ingredientName, &amount);
+
+            // Skip lines corresponding to the deleted menu item
+            int skipLine = 0;
+            for (int i = 0; i < rowCount; i++) {
+                if (strcmp(menuName, menu[i].name) == 0 && strcmp(menu[i].code, codeToDelete) == 0) {
+                    skipLine = 1;
+                    break;
+                }
+            }
+
+            if (!skipLine) {
+                fprintf(tempIngredientFile, "%s,%s,%.2f\n", menuName, ingredientName, amount);
+            }
+        }
+
+        fclose(ingredientFile);
+        fclose(tempIngredientFile);
+
+        remove("Ingredient.csv");
+        rename("TempIngredient.csv", "Ingredient.csv");
     } else {
         remove("TempMenu.csv");
         printf("Menu item with code '%s' not found.\n", codeToDelete);
@@ -951,7 +983,6 @@ void DeleteMenuItem() {
     printf("Press Enter to return to the menu...\n");
     getchar();
 }
-
 
 // Edit Menu Item Menu
 
