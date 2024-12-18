@@ -1,4 +1,4 @@
-﻿name,ingredientName,0.00
+﻿name,ingredientName,amountPerUnit
 Roasted Pork Noodles,Noodles,75.00
 Roasted Pork Noodles,Roasted Pork,40.00
 Roasted Pork Noodles,Roasted Chicken,0.00
@@ -87,27 +87,3 @@ Minced Pork Noodles with Pork Wonton,Minced Pork,20.00
 Minced Pork Noodles with Pork Wonton,Crispy Pork,0.00
 Minced Pork Noodles with Pork Wonton,Crab,0.00
 Minced Pork Noodles with Pork Wonton,Shrimp,0.00
-Houng,Noodles,2.00
-Houng,Minced Pork,2.00
-Houng,Crab,2.00
-Houng,Shrimp,2.00
-Houng,Noodles,2.00
-Houng,Roasted Pork,2.00
-Houng,Roasted Chicken,2.00
-Houng,Shrimp Wonton,2.00
-Houng,Pork Wonton,2.00
-Houng,Vegetables,2.00
-Houng,Egg,2.00
-Houng,Minced Pork,2.00
-Houng,Crab,2.00
-Houng,Shrimp,2.00
-Heng,Noodles,4.00
-Heng,Roasted Pork,4.00
-Heng,Roasted Chicken,4.00
-Heng,Shrimp Wonton,4.00
-Heng,Pork Wonton,4.00
-Heng,Vegetables,4.00
-Heng,Egg,4.00
-Heng,Minced Pork,4.00
-Heng,Crab,4.00
-Heng,Shrimp,4.00

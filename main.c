@@ -1396,7 +1396,7 @@ void CreateNewMenuItem() {
     double ingredientAmounts[MAX_ROWS] = {0};
 
     // Determine the next menu number
-    int nextMenuNumber = 1; // Default to 1 if the file is empty
+    int nextMenuNumber = 1;
 
     FILE *menuFile = fopen("Menu.csv", "r");
     if (menuFile) {
@@ -1409,7 +1409,7 @@ void CreateNewMenuItem() {
                 continue; // Skip the header row
             }
 
-            nextMenuNumber++; // Count the number of existing rows
+            nextMenuNumber++;
         }
 
         fclose(menuFile);
@@ -1425,7 +1425,6 @@ void CreateNewMenuItem() {
     char line[MAX_LINE_LENGTH];
     int isHeader = 1;
 
-    // Load ingredient names from the first column of Stock.csv
     while (fgets(line, sizeof(line), ingredientFile)) {
         if (isHeader) {
             isHeader = 0;
@@ -1434,13 +1433,10 @@ void CreateNewMenuItem() {
 
         char *token = strtok(line, ",");
         if (token) {
-            // Extract the ingredient name from the second column (after ID)
-            token = strtok(NULL, ","); // Move to the second column which is the name
+            token = strtok(NULL, ",");
             if (token) {
-                // Remove any newline character at the end of the name
                 token[strcspn(token, "\n")] = '\0';
 
-                // Check for duplicates
                 int duplicate = 0;
                 for (int i = 0; i < ingredientCount; i++) {
                     if (strcmp(ingredients[i].name, token) == 0) {
@@ -1450,7 +1446,6 @@ void CreateNewMenuItem() {
                 }
 
                 if (!duplicate) {
-                    // Add the ingredient to the list
                     strncpy(ingredients[ingredientCount].name, token, sizeof(ingredients[ingredientCount].name) - 1);
                     ingredientCount++;
                 }
@@ -1473,9 +1468,15 @@ void CreateNewMenuItem() {
     fgets(newItem.name, sizeof(newItem.name), stdin);
     newItem.name[strcspn(newItem.name, "\n")] = '\0';
 
-    printf("Enter price for the new menu item: ");
-    scanf("%lf", &newItem.price);
-    clearInputBuffer();
+    // Input validation for price
+    do {
+        printf("Enter price for the new menu item: ");
+        scanf("%lf", &newItem.price);
+        clearInputBuffer();
+        if (newItem.price < 0) {
+            printf("Price cannot be negative. Please enter a valid price.\n");
+        }
+    } while (newItem.price < 0);
 
     printf("Enter description for the new menu item: ");
     fgets(newItem.description, sizeof(newItem.description), stdin);
@@ -1485,9 +1486,14 @@ void CreateNewMenuItem() {
     printf("Enter amounts for each ingredient:\n");
 
     for (int i = 0; i < ingredientCount; i++) {
-        printf("Amount of %s required for the new menu item: ", ingredients[i].name);
-        scanf("%lf", &ingredientAmounts[i]);
-        clearInputBuffer();
+        do {
+            printf("Amount of %s required for the new menu item: ", ingredients[i].name);
+            scanf("%lf", &ingredientAmounts[i]);
+            clearInputBuffer();
+            if (ingredientAmounts[i] < 0) {
+                printf("Amount cannot be negative. Please enter a valid amount.\n");
+            }
+        } while (ingredientAmounts[i] < 0);
     }
 
     // Append the new item to the Menu.csv file
@@ -1512,7 +1518,6 @@ void CreateNewMenuItem() {
     }
 
     for (int i = 0; i < ingredientCount; i++) {
-        // Write the menu item, ingredient, and amount
         fprintf(ingredientFileWrite, "%s,%s,%.2f\n", newItem.name, ingredients[i].name, ingredientAmounts[i]);
     }
 
@@ -1688,13 +1693,28 @@ void EditMenuItem() {
         strncpy(menu[foundIndex].name, newName, sizeof(menu[foundIndex].name) - 1);
     }
 
+    // Validate the new price input
     char priceInput[20];
-    printf("Enter new price (current: %.2f): ", menu[foundIndex].price);
-    fgets(priceInput, sizeof(priceInput), stdin);
-    trimWhitespace(priceInput);
-    if (priceInput[0] != '\0') {
-        menu[foundIndex].price = atof(priceInput);
+    double tempPrice;
+    while (1) {
+        printf("Enter new price (current: %.2f): ", menu[foundIndex].price);
+        fgets(priceInput, sizeof(priceInput), stdin);
+        trimWhitespace(priceInput);
+
+        if (priceInput[0] == '\0') {
+            // Retain current price if input is empty
+            tempPrice = menu[foundIndex].price;
+            break;
+        }
+
+        tempPrice = atof(priceInput);
+        if (tempPrice < 0) {
+            printf("Price must be a non-negative value. Please try again.\n");
+        } else {
+            break;
+        }
     }
+    menu[foundIndex].price = tempPrice;
 
     char newDescription[100];
     printf("Enter new description (current: %s): ", menu[foundIndex].description);
@@ -1717,10 +1737,10 @@ void EditMenuItem() {
 
     // Write the updated menu items to the temporary file
     for (int i = 0; i < rowCount; i++) {
-        fprintf(tempFile, "%s,%s,%.2f,%s\n", 
-                menu[i].code, 
-                menu[i].name, 
-                menu[i].price, 
+        fprintf(tempFile, "%s,%s,%.2f,%s\n",
+                menu[i].code,
+                menu[i].name,
+                menu[i].price,
                 menu[i].description);
     }
 
@@ -1735,6 +1755,7 @@ void EditMenuItem() {
     printf("Press Enter to return to the menu...\n");
     getchar();
 }
+
 
 // Edit Ingredient
 
@@ -1827,14 +1848,28 @@ void EditIngredient() {
             printf("\nIngredient: %s\n", ingredients[i].ingredientName);
             printf("Current amount per unit: %d\n", ingredients[i].amountPerUnit);
 
-            // Prompt the user to enter a new amount
-            printf("Enter new amount (or press Enter to keep current value): ");
+            // Prompt the user to enter a new amount and validate it
             char amountInput[10];
-            fgets(amountInput, sizeof(amountInput), stdin);
-            trimWhitespace(amountInput);
-            if (amountInput[0] != '\0') {
-                ingredients[i].amountPerUnit = atoi(amountInput);
+            int tempAmount;
+            while (1) {
+                printf("Enter new amount (or press Enter to keep current value): ");
+                fgets(amountInput, sizeof(amountInput), stdin);
+                trimWhitespace(amountInput);
+
+                if (amountInput[0] == '\0') {
+                    // Retain current amount if input is empty
+                    tempAmount = ingredients[i].amountPerUnit;
+                    break;
+                }
+
+                tempAmount = atoi(amountInput);
+                if (tempAmount < 0) {
+                    printf("Amount per unit must be a non-negative value. Please try again.\n");
+                } else {
+                    break;
+                }
             }
+            ingredients[i].amountPerUnit = tempAmount;
         }
     }
 
@@ -1876,6 +1911,7 @@ void EditIngredient() {
 }
 
 
+
 // Delete Menu Items
 
 #include <stdio.h>
@@ -1890,6 +1926,7 @@ void DeleteMenuItem() {
         int id;
         char name[100];
         float price;
+        char description[256];
     } MenuItem;
 
     MenuItem menu[MAX_ROWS];
@@ -1912,7 +1949,7 @@ void DeleteMenuItem() {
             continue;
         }
 
-        sscanf(line, "%d,%[^,],%f", &menu[rowCount].id, menu[rowCount].name, &menu[rowCount].price);
+        sscanf(line, "%d,%[^,],%f,%[^\n]", &menu[rowCount].id, menu[rowCount].name, &menu[rowCount].price, menu[rowCount].description);
         rowCount++;
     }
     fclose(file);
@@ -1921,11 +1958,11 @@ void DeleteMenuItem() {
     printf("===================================================================================\n");
     printf("                                MENU ITEMS\n");
     printf("===================================================================================\n");
-    printf("ID   Name                                      Price\n");
+    printf("ID   Name                                      Price     Description\n");
     printf("-----------------------------------------------------------------------------------\n");
 
     for (int i = 0; i < rowCount; i++) {
-        printf("%-4d %-40s %.2f\n", menu[i].id, menu[i].name, menu[i].price);
+        printf("%-4d %-40s %-8.2f %s\n", menu[i].id, menu[i].name, menu[i].price, menu[i].description);
     }
 
     // Prompt the user for the ID of the menu item to delete
@@ -1936,9 +1973,11 @@ void DeleteMenuItem() {
 
     // Check if the ID exists and delete it
     int found = 0;
+    char deletedMenuName[100];
     for (int i = 0; i < rowCount; i++) {
         if (menu[i].id == deleteId) {
             found = 1;
+            strcpy(deletedMenuName, menu[i].name); // Save the menu name for ingredient deletion
             for (int j = i; j < rowCount - 1; j++) {
                 menu[j] = menu[j + 1]; // Shift items up
             }
@@ -1965,19 +2004,60 @@ void DeleteMenuItem() {
     }
 
     // Write the header
-    fprintf(file, "id,name,price\n");
+    fprintf(file, "Code,Name,Price,Description\n");
 
     // Write the updated menu items
     for (int i = 0; i < rowCount; i++) {
-        fprintf(file, "%d,%s,%.2f\n", menu[i].id, menu[i].name, menu[i].price);
+        fprintf(file, "%d,%s,%.2f,%s\n", menu[i].id, menu[i].name, menu[i].price, menu[i].description);
     }
 
     fclose(file);
 
-    printf("\nMenu item deleted and IDs updated successfully!\n");
+    // Now handle the deletion of associated ingredients
+    FILE *ingredientFile = fopen("Ingredient.csv", "r");
+    if (!ingredientFile) {
+        perror("Error opening Ingredient.csv");
+        return;
+    }
+
+    FILE *tempIngredientFile = fopen("Ingredient_temp.csv", "w");
+    if (!tempIngredientFile) {
+        perror("Error creating temporary Ingredient file");
+        fclose(ingredientFile);
+        return;
+    }
+
+    // Write the header to the temporary file
+    isHeader = 1;
+    while (fgets(line, sizeof(line), ingredientFile)) {
+        if (isHeader) {
+            fprintf(tempIngredientFile, "%s", line); // Copy the header
+            isHeader = 0;
+            continue;
+        }
+
+        char menuName[100], ingredientName[100];
+        int amountPerUnit;
+        sscanf(line, "%[^,],%[^,],%d", menuName, ingredientName, &amountPerUnit);
+
+        // Copy the line only if it doesn't match the deleted menu name
+        if (strcmp(menuName, deletedMenuName) != 0) {
+            fprintf(tempIngredientFile, "%s", line);
+        }
+    }
+
+    fclose(ingredientFile);
+    fclose(tempIngredientFile);
+
+    // Replace the original Ingredient.csv file
+    remove("Ingredient.csv");
+    rename("Ingredient_temp.csv", "Ingredient.csv");
+
+    printf("\nMenu item and associated ingredients deleted successfully!\n");
     printf("Press Enter to return to the menu...\n");
     getchar();
 }
+
 
 // Edit Menu Item Menu
 
@@ -2141,9 +2221,17 @@ void AddNewStock() {
     fgets(newStock.name, sizeof(newStock.name), stdin);
     newStock.name[strcspn(newStock.name, "\n")] = '\0';
 
-    printf("Enter Quantity: ");
-    scanf("%d", &newStock.quantity);
-    clearInputBuffer();
+    // Validate the quantity to ensure it's non-negative
+    while (1) {
+        printf("Enter Quantity: ");
+        scanf("%d", &newStock.quantity);
+        clearInputBuffer();
+        if (newStock.quantity >= 0) {
+            break;
+        } else {
+            printf("Quantity must be a non-negative value. Please try again.\n");
+        }
+    }
 
     printf("Enter Unit: ");
     fgets(newStock.unit, sizeof(newStock.unit), stdin);
@@ -2162,20 +2250,44 @@ void AddNewStock() {
             newStock.id, newStock.name, newStock.quantity, 
             newStock.unit, newStock.restock, newStock.expire);
 
-    // Input restock rules
+    // Input restock rules and validate inputs
     int threshold, restockAmount, expireDays;
 
-    printf("Enter Threshold (amount to trigger restock): ");
-    scanf("%d", &threshold);
-    clearInputBuffer();
+    // Validate the threshold to ensure it's non-negative
+    while (1) {
+        printf("Enter Threshold (amount to trigger restock): ");
+        scanf("%d", &threshold);
+        clearInputBuffer();
+        if (threshold >= 0) {
+            break;
+        } else {
+            printf("Threshold must be a non-negative value. Please try again.\n");
+        }
+    }
 
-    printf("Enter Restock Amount (amount to add when restocking): ");
-    scanf("%d", &restockAmount);
-    clearInputBuffer();
+    // Validate the restock amount to ensure it's non-negative
+    while (1) {
+        printf("Enter Restock Amount (amount to add when restocking): ");
+        scanf("%d", &restockAmount);
+        clearInputBuffer();
+        if (restockAmount >= 0) {
+            break;
+        } else {
+            printf("Restock Amount must be a non-negative value. Please try again.\n");
+        }
+    }
 
-    printf("Enter Expire Days (days until the stock expires): ");
-    scanf("%d", &expireDays);
-    clearInputBuffer();
+    // Validate the expire days to ensure it's non-negative
+    while (1) {
+        printf("Enter Expire Days (days until the stock expires): ");
+        scanf("%d", &expireDays);
+        clearInputBuffer();
+        if (expireDays >= 0) {
+            break;
+        } else {
+            printf("Expire Days must be a non-negative value. Please try again.\n");
+        }
+    }
 
     // Write to RestockRules.csv
     fprintf(rulesFile, "%s,%d,%d,%d\n", 
@@ -2189,6 +2301,7 @@ void AddNewStock() {
     printf("Press Enter to continue...");
     getchar();
 }
+
 
 // Deleting a stock function
 
@@ -2409,9 +2522,17 @@ void EditStockItem() {
     fgets(stock[foundIndex].name, sizeof(stock[foundIndex].name), stdin);
     stock[foundIndex].name[strcspn(stock[foundIndex].name, "\n")] = '\0';
 
-    printf("Enter new quantity (current: %d): ", stock[foundIndex].quantity);
-    scanf("%d", &stock[foundIndex].quantity);
-    clearInputBuffer();
+    // Validate the quantity to ensure it's non-negative
+    while (1) {
+        printf("Enter new quantity (current: %d): ", stock[foundIndex].quantity);
+        scanf("%d", &stock[foundIndex].quantity);
+        clearInputBuffer();
+        if (stock[foundIndex].quantity >= 0) {
+            break;
+        } else {
+            printf("Quantity must be a non-negative value. Please try again.\n");
+        }
+    }
 
     printf("Enter new unit (current: %s): ", stock[foundIndex].unit);
     fgets(stock[foundIndex].unit, sizeof(stock[foundIndex].unit), stdin);
@@ -2425,19 +2546,44 @@ void EditStockItem() {
     fgets(stock[foundIndex].expire, sizeof(stock[foundIndex].expire), stdin);
     stock[foundIndex].expire[strcspn(stock[foundIndex].expire, "\n")] = '\0';
 
-    // Prompt for restock rule updates
+    // Prompt for restock rule updates and validate inputs
     int threshold, restockAmount, expireDays;
-    printf("Enter new threshold value: ");
-    scanf("%d", &threshold);
-    clearInputBuffer();
 
-    printf("Enter new restock amount: ");
-    scanf("%d", &restockAmount);
-    clearInputBuffer();
+    // Validate the threshold to ensure it's non-negative
+    while (1) {
+        printf("Enter new threshold value: ");
+        scanf("%d", &threshold);
+        clearInputBuffer();
+        if (threshold >= 0) {
+            break;
+        } else {
+            printf("Threshold must be a non-negative value. Please try again.\n");
+        }
+    }
 
-    printf("Enter new days until expiration: ");
-    scanf("%d", &expireDays);
-    clearInputBuffer();
+    // Validate the restock amount to ensure it's non-negative
+    while (1) {
+        printf("Enter new restock amount: ");
+        scanf("%d", &restockAmount);
+        clearInputBuffer();
+        if (restockAmount >= 0) {
+            break;
+        } else {
+            printf("Restock Amount must be a non-negative value. Please try again.\n");
+        }
+    }
+
+    // Validate the expire days to ensure it's non-negative
+    while (1) {
+        printf("Enter new days until expiration: ");
+        scanf("%d", &expireDays);
+        clearInputBuffer();
+        if (expireDays >= 0) {
+            break;
+        } else {
+            printf("Expire Days must be a non-negative value. Please try again.\n");
+        }
+    }
 
     // Update RestockRules.csv using the old name
     FILE *rulesFile = fopen("RestockRules.csv", "r");
