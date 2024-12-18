@@ -1,11 +1,15 @@
 id,name,quantity,unit,restock,expire
-N1,Noodles,59400,gram,2024-12-17,2024-12-24
-GP1,Roasted Pork,19680,gram,2024-12-17,2024-12-24
-GC1,Roasted Chicken,19680,gram,2024-12-17,2024-12-24
-SW1,Shrimp Wonton,56,piece,2024-12-17,2024-12-20
-PW1,Pork Wonton,56,piece,2024-12-17,2024-12-20
-V1,Vegetables,4920,gram,2024-12-17,2024-12-19
+N1,Noodles,5782,gram,2024-12-17,2024-12-24
+GP1,Roasted Pork,19600,gram,2024-12-17,2024-12-24
+GC1,Roasted Chicken,19600,gram,2024-12-17,2024-12-24
+SW1,Shrimp Wonton,47,piece,2024-12-17,2024-12-20
+PW1,Pork Wonton,50,piece,2024-12-17,2024-12-20
+V1,Vegetables,4890,gram,2024-12-17,2024-12-19
 E1,Egg,50,Egg,2024-12-17,2024-12-24
-MP1,Minced Pork,19840,gram,2024-12-17,2024-12-20
-C1,Crab,10000,gram,2024-12-17,2024-12-20
+MP1,Minced Pork,19800,gram,2024-12-17,2024-12-20
+C1,Crab,9970,gram,2024-12-17,2024-12-20
 S1,Shrimp,10000,gram,2024-12-17,2024-12-20
+NEW11,Minced Pork,80,gram,2024-12-18,2024-12-22
+NEW12,Noodles,3000,gram,2024-12-18,2024-12-25
+AUTO013,Noodles,60000,gram,2024-12-18,2024-12-25
+AUTO014,Vegetables,20000,gram,2024-12-18,2024-12-20

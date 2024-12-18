@@ -1018,7 +1018,7 @@ void generate_stock_sales_report(void) {
 
     char current_date[20] = ""; // To track the current group
     int total_quantity = 0;    // Total quantity for the current date
-    int total_price = 0;       // Total price for the current date
+    float total_price = 0;       // Total price for the current date
 
     // Iterate through the events and print them grouped by date
     for (int i = 0; i < event_count; i++) {
@@ -1053,7 +1053,7 @@ void generate_stock_sales_report(void) {
             printf("Restock       | %-44s | %-8d | %-12s\n", events[i].product_name, events[i].quantity, "N/A");
             total_quantity += events[i].quantity; // Add restocked quantity to total
         } else if (events[i].type == SALES_EVENT) {
-            printf("Sale          | %-44s | %-8d | %-12d\n", events[i].product_name, events[i].quantity, events[i].total_price);
+            printf("Sale          | %-44s | %-8d | %-12.2f\n", events[i].product_name, events[i].quantity, events[i].total_price);
             total_quantity += events[i].quantity;  // Add sold quantity to total
             total_price += events[i].total_price;  // Add total price to total
         }
@@ -3946,9 +3946,8 @@ int timecheck() {
     strftime(today, sizeof(today), "%Y-%m-%d", tm_info); // Format today's date as "YYYY-MM-DD"
 
     // Check if today is the target day (Thursday)
-    if (tm_info->tm_wday != 3) { // 4 = Thursday
+    if (tm_info->tm_wday != 4) { // 4 = Thursday
         fclose(file);
-        printf("Today is not the target auto-purchase day.\n");
         return 0; // Do not proceed with auto-purchase
     }
 
