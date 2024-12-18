@@ -1,4 +1,3 @@
-id,name,quantity,unit,restock,expire
 N1,Noodles,60000,gram,2024-12-17,2024-12-24
 GP1,Roasted Pork,20000,gram,2024-12-17,2024-12-24
 GC1,Roasted Chicken,20000,gram,2024-12-17,2024-12-24
