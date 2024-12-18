@@ -1171,9 +1171,24 @@ void EditCoupon() {
 
     // Edit the selected coupon
     printf("\nEditing Coupon: %s\n", couponCode);
-    printf("Enter new coupon code (current: %s): ", coupons[foundIndex].code);
-    fgets(coupons[foundIndex].code, sizeof(coupons[foundIndex].code), stdin);
-    coupons[foundIndex].code[strcspn(coupons[foundIndex].code, "\n")] = '\0';
+
+    // Prompt for new coupon code with duplicate validation
+    while (1) {
+        printf("Enter new coupon code (current: %s): ", coupons[foundIndex].code);
+        fgets(coupons[foundIndex].code, sizeof(coupons[foundIndex].code), stdin);
+        coupons[foundIndex].code[strcspn(coupons[foundIndex].code, "\n")] = '\0'; // Remove newline character
+
+        int isDuplicate = 0;
+        for (int i = 0; i < rowCount; i++) {
+            if (i != foundIndex && strcmp(coupons[i].code, coupons[foundIndex].code) == 0) {
+                printf("Error: Coupon code '%s' already exists. Please enter a unique code.\n", coupons[foundIndex].code);
+                isDuplicate = 1;
+                break;
+            }
+        }
+
+        if (!isDuplicate) break; // Exit loop if the code is unique
+    }
 
     printf("Enter new discount percentage (current: %d): ", coupons[foundIndex].discount);
     scanf("%d", &coupons[foundIndex].discount);
@@ -1181,7 +1196,7 @@ void EditCoupon() {
 
     printf("Enter new condition (current: %s): ", coupons[foundIndex].condition);
     fgets(coupons[foundIndex].condition, sizeof(coupons[foundIndex].condition), stdin);
-    coupons[foundIndex].condition[strcspn(coupons[foundIndex].condition, "\n")] = '\0';
+    coupons[foundIndex].condition[strcspn(coupons[foundIndex].condition, "\n")] = '\0'; // Remove newline character
 
     printf("Enter new minimum spend (current: %d): ", coupons[foundIndex].minSpend);
     scanf("%d", &coupons[foundIndex].minSpend);
@@ -1244,36 +1259,73 @@ void ViewDiscountCoupon() {
 
 void CreateCoupon() {
     DiscountCoupon newCoupon;
-    FILE *file = fopen("Discount.csv", "a");  // Open the file in append mode
+    DiscountCoupon existingCoupons[MAX_ROWS];
+    int rowCount = 0;
+
+    FILE *file = fopen("Discount.csv", "r"); // Open the file in read mode to check existing codes
     if (!file) {
-        perror("Error opening file");
+        perror("Error opening Discount.csv file");
         return;
     }
 
-    printf("Enter Coupon Code: ");
-    fgets(newCoupon.code, sizeof(newCoupon.code), stdin);
-    newCoupon.code[strcspn(newCoupon.code, "\n")] = '\0';  // Remove newline character
+    // Read existing coupons into memory
+    char line[MAX_LINE_LENGTH];
+    while (fgets(line, sizeof(line), file)) {
+        sscanf(line, "%[^,],%d,%[^,],%d",
+               existingCoupons[rowCount].code,
+               &existingCoupons[rowCount].discount,
+               existingCoupons[rowCount].condition,
+               &existingCoupons[rowCount].minSpend);
+        rowCount++;
+    }
+    fclose(file);
+
+    // Prompt for new coupon code
+    while (1) {
+        printf("Enter Coupon Code: ");
+        fgets(newCoupon.code, sizeof(newCoupon.code), stdin);
+        newCoupon.code[strcspn(newCoupon.code, "\n")] = '\0'; // Remove newline character
+
+        // Check for duplicates
+        int isDuplicate = 0;
+        for (int i = 0; i < rowCount; i++) {
+            if (strcmp(existingCoupons[i].code, newCoupon.code) == 0) {
+                printf("Error: Coupon code '%s' already exists. Please enter a unique code.\n", newCoupon.code);
+                isDuplicate = 1;
+                break;
+            }
+        }
+
+        if (!isDuplicate) break; // Exit loop if the code is unique
+    }
 
     printf("Enter Discount Percentage: ");
     scanf("%d", &newCoupon.discount);
-    clearInputBuffer();  // Clear the input buffer after scanf
+    clearInputBuffer(); // Clear the input buffer after scanf
 
     printf("Enter Condition: ");
     fgets(newCoupon.condition, sizeof(newCoupon.condition), stdin);
-    newCoupon.condition[strcspn(newCoupon.condition, "\n")] = '\0';  // Remove newline
+    newCoupon.condition[strcspn(newCoupon.condition, "\n")] = '\0'; // Remove newline character
 
     printf("Enter Minimum Spend (If there is no condition, enter 0): ");
     scanf("%d", &newCoupon.minSpend);
     clearInputBuffer();
 
-    // Write new coupon to the file, with a newline after the entry
+    // Open the file in append mode to add the new coupon
+    file = fopen("Discount.csv", "a");
+    if (!file) {
+        perror("Error opening Discount.csv file");
+        return;
+    }
+
     fprintf(file, "%s,%d,%s,%d\n", newCoupon.code, newCoupon.discount, newCoupon.condition, newCoupon.minSpend);
     fclose(file);
 
     printf("Coupon created successfully!\n");
     printf("Press Enter to continue...");
-    getchar();  // Wait for the user to press Enter
+    getchar(); // Wait for the user to press Enter
 }
+
 
 // Remove Discount Coupons
 
