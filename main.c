@@ -1878,18 +1878,24 @@ void EditIngredient() {
 
 // Delete Menu Items
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MAX_ROWS 100
+#define MAX_LINE_LENGTH 512
+
 void DeleteMenuItem() {
     typedef struct {
-        char code[20];
+        int id;
         char name[100];
-        double price;
-        char description[100];
+        float price;
     } MenuItem;
 
     MenuItem menu[MAX_ROWS];
     int rowCount = 0;
 
-    // Read from Menu.csv
+    // Open the Menu.csv file
     FILE *file = fopen("Menu.csv", "r");
     if (!file) {
         perror("Error opening Menu.csv");
@@ -1899,115 +1905,76 @@ void DeleteMenuItem() {
     char line[MAX_LINE_LENGTH];
     int isHeader = 1;
 
+    // Read the menu items into the menu array
     while (fgets(line, sizeof(line), file)) {
         if (isHeader) {
-            isHeader = 0;
+            isHeader = 0; // Skip the header line
             continue;
         }
 
-        sscanf(line, "%[^,],%[^,],%lf,%[^\n]",
-               menu[rowCount].code,
-               menu[rowCount].name,
-               &menu[rowCount].price,
-               menu[rowCount].description);
-
+        sscanf(line, "%d,%[^,],%f", &menu[rowCount].id, menu[rowCount].name, &menu[rowCount].price);
         rowCount++;
     }
     fclose(file);
 
-    // Display menu for deletion
-    clearScreen();
+    // Display the menu items
     printf("===================================================================================\n");
-    printf("                                       MENU\n");
+    printf("                                MENU ITEMS\n");
     printf("===================================================================================\n");
-    printf("Code    Name                                             Price     Description\n");
+    printf("ID   Name                                      Price\n");
     printf("-----------------------------------------------------------------------------------\n");
 
     for (int i = 0; i < rowCount; i++) {
-        printf("%-7s%-50s%-10.2f%-30s\n",
-               menu[i].code,
-               menu[i].name,
-               menu[i].price,
-               menu[i].description);
+        printf("%-4d %-40s %.2f\n", menu[i].id, menu[i].name, menu[i].price);
     }
 
-    printf("===================================================================================\n");
-    printf("Enter the code of the menu item to delete: ");
+    // Prompt the user for the ID of the menu item to delete
+    int deleteId;
+    printf("Enter the ID of the menu item to delete: ");
+    scanf("%d", &deleteId);
+    getchar(); // Clear the input buffer
 
-    char codeToDelete[20];
-    fgets(codeToDelete, sizeof(codeToDelete), stdin);
-    codeToDelete[strcspn(codeToDelete, "\n")] = '\0';
+    // Check if the ID exists and delete it
+    int found = 0;
+    for (int i = 0; i < rowCount; i++) {
+        if (menu[i].id == deleteId) {
+            found = 1;
+            for (int j = i; j < rowCount - 1; j++) {
+                menu[j] = menu[j + 1]; // Shift items up
+            }
+            rowCount--;
+            break;
+        }
+    }
 
-    FILE *tempFile = fopen("TempMenu.csv", "w");
-    if (!tempFile) {
-        perror("Error creating temporary file");
+    if (!found) {
+        printf("Menu item with ID %d not found.\n", deleteId);
         return;
     }
 
-    int found = 0;
+    // Reassign IDs to ensure they are sequential
     for (int i = 0; i < rowCount; i++) {
-        if (strcmp(menu[i].code, codeToDelete) != 0) {
-            fprintf(tempFile, "%s,%s,%.2f,%s\n",
-                    menu[i].code,
-                    menu[i].name,
-                    menu[i].price,
-                    menu[i].description);
-        } else {
-            found = 1;
-        }
-    }
-    fclose(tempFile);
-
-    // Update Menu.csv
-    if (found) {
-        remove("Menu.csv");
-        rename("TempMenu.csv", "Menu.csv");
-        printf("Menu item with code '%s' deleted successfully!\n", codeToDelete);
-
-        // Delete related records from Ingredient.csv
-        FILE *ingredientFile = fopen("Ingredient.csv", "r");
-        if (!ingredientFile) {
-            perror("Error opening Ingredient.csv");
-            return;
-        }
-
-        FILE *tempIngredientFile = fopen("TempIngredient.csv", "w");
-        if (!tempIngredientFile) {
-            perror("Error creating temporary Ingredient file");
-            fclose(ingredientFile);
-            return;
-        }
-
-        while (fgets(line, sizeof(line), ingredientFile)) {
-            char menuName[100], ingredientName[50];
-            double amount;
-
-            sscanf(line, "%[^,],%[^,],%lf", menuName, ingredientName, &amount);
-
-            // Skip lines corresponding to the deleted menu item
-            int skipLine = 0;
-            for (int i = 0; i < rowCount; i++) {
-                if (strcmp(menuName, menu[i].name) == 0 && strcmp(menu[i].code, codeToDelete) == 0) {
-                    skipLine = 1;
-                    break;
-                }
-            }
-
-            if (!skipLine) {
-                fprintf(tempIngredientFile, "%s,%s,%.2f\n", menuName, ingredientName, amount);
-            }
-        }
-
-        fclose(ingredientFile);
-        fclose(tempIngredientFile);
-
-        remove("Ingredient.csv");
-        rename("TempIngredient.csv", "Ingredient.csv");
-    } else {
-        remove("TempMenu.csv");
-        printf("Menu item with code '%s' not found.\n", codeToDelete);
+        menu[i].id = i + 1; // IDs start from 1
     }
 
+    // Write the updated menu back to the file
+    file = fopen("Menu.csv", "w");
+    if (!file) {
+        perror("Error writing to Menu.csv");
+        return;
+    }
+
+    // Write the header
+    fprintf(file, "id,name,price\n");
+
+    // Write the updated menu items
+    for (int i = 0; i < rowCount; i++) {
+        fprintf(file, "%d,%s,%.2f\n", menu[i].id, menu[i].name, menu[i].price);
+    }
+
+    fclose(file);
+
+    printf("\nMenu item deleted and IDs updated successfully!\n");
     printf("Press Enter to return to the menu...\n");
     getchar();
 }
