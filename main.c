@@ -2953,10 +2953,16 @@ void restockMenu(Item items[], int *rowCount, char uniqueNames[][50], int unique
     // Prompt user for restock details
     printf("Enter restock amount for %s: ", uniqueNames[choice]);
     scanf("%d", &restockAmount);
+     while(restockAmount<=0){
+                    printf("Invalid quantity!\n");
+                    printf("Enter the quantity: ");
+                    scanf("%d", &restockAmount);
+                }
+    
 
     // Prompt user for unit and validate
     do {
-        printf("Enter unit for %s (e.g., g, piece): ", uniqueNames[choice]);
+        printf("Enter unit for %s (gram / piece / Egg): ", uniqueNames[choice]);
         scanf("%s", inputUnit);
 
         int unitMatches = 0;
@@ -3907,6 +3913,11 @@ void viewItemDetails(int choice){
             if(a == 1){
                 printf("Enter the quantity: ");
                 scanf("%d", &quantity);
+                while(quantity<=0){
+                    printf("Invalid quantity!\n");
+                    printf("Enter the quantity: ");
+                    scanf("%d", &quantity);
+                }
                 clearInputBuffer();
             }else if(a == 2){
                 return;
@@ -4074,13 +4085,23 @@ int timecheck() {
         fclose(file);
         file = fopen(FLAG_FILE, "r+"); // Reopen in read+write mode
     }
+
     char today[20];
     time_t t = time(NULL);
     struct tm *tm_info = localtime(&t);
     strftime(today, sizeof(today), "%Y-%m-%d", tm_info); // Format today's date as "YYYY-MM-DD"
+
+    // Check if today is the target day (Thursday)
+    if (tm_info->tm_wday != 3) { // 4 = Thursday
+        fclose(file);
+        printf("Today is not the target auto-purchase day.\n");
+        return 0; // Do not proceed with auto-purchase
+    }
+
     char line[50];
     char date[20], flag[5];
     int alreadyPurchased = 0;
+
     // Check if today's date is already recorded
     while (fgets(line, sizeof(line), file)) {
         if (sscanf(line, "%19[^,],%4s", date, flag) == 2) {
@@ -4090,14 +4111,17 @@ int timecheck() {
             }
         }
     }
-    
-    if (!alreadyPurchased && tm_info->tm_wday == 4) { // 4 = Thursday
+
+    // If not already purchased, record today's date
+    if (!alreadyPurchased) {
         fseek(file, 0, SEEK_END); // Move to end of file
         fprintf(file, "%s,1\n", today);
     }
+
     fclose(file);
     return !alreadyPurchased; // Return 1 if auto-purchase performed, 0 otherwise
 }
+
 void autologSaleToCSV(const char *filename) {
     FILE *file = fopen(filename, "a"); // เปิดไฟล์ในโหมด append
     if (file == NULL) {
@@ -4130,12 +4154,13 @@ void autoCutStocks() {
     saveStockToCSV("Stock.csv");
 }
 int autoPurchased(){
-    int a=1;
+    int a=1,b=2;
     if (timecheck()) {
+        isAutoPurchasedToday();
         autoCutStocks();  // Simulate cutting stock
         return a;
     } else {
-        return 0;
+        return b;
     }
     
 }
