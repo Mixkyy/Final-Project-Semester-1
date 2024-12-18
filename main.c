@@ -2840,10 +2840,16 @@ void restockMenu(Item items[], int *rowCount, char uniqueNames[][50], int unique
     // Prompt user for restock details
     printf("Enter restock amount for %s: ", uniqueNames[choice]);
     scanf("%d", &restockAmount);
+     while(restockAmount<=0){
+                    printf("Invalid quantity!\n");
+                    printf("Enter the quantity: ");
+                    scanf("%d", &restockAmount);
+                }
+    
 
     // Prompt user for unit and validate
     do {
-        printf("Enter unit for %s (e.g., g, piece): ", uniqueNames[choice]);
+        printf("Enter unit for %s (gram / piece / Egg): ", uniqueNames[choice]);
         scanf("%s", inputUnit);
 
         int unitMatches = 0;
@@ -3794,6 +3800,11 @@ void viewItemDetails(int choice){
             if(a == 1){
                 printf("Enter the quantity: ");
                 scanf("%d", &quantity);
+                while(quantity<=0){
+                    printf("Invalid quantity!\n");
+                    printf("Enter the quantity: ");
+                    scanf("%d", &quantity);
+                }
                 clearInputBuffer();
             }else if(a == 2){
                 return;
@@ -3978,7 +3989,7 @@ int timecheck() {
         }
     }
     
-    if (!alreadyPurchased && tm_info->tm_wday == 4) { // 4 = Thursday
+    if (!alreadyPurchased && tm_info->tm_wday == 3) { // 4 = Thursday
         fseek(file, 0, SEEK_END); // Move to end of file
         fprintf(file, "%s,1\n", today);
     }
