@@ -1,10 +1,10 @@
 2024-12-13 17:46:38,Roasted Pork Noodles,1,50
 2024-12-13 18:15:47,Crispy Pork Noodle with Pork Wonton,5,400
-2024-12-13 18:22:20,Roasted Pork Noodles with Shrimp Wonton,3,210
-2024-12-13 18:25:19,Roasted Pork Noodles with Shrimp Wonton,4,280
+2024-12-13 18:22:20,Minced Pork Noodles with Pork Wonton,3,210
+2024-12-13 18:25:19,Roasted Pork Noodles,1,50
 2024-12-13 18:26:38,Roasted Pork Noodles with Shrimp Wonton,4,280
 2024-12-13 18:34:32,Roasted Chicken Noodles with Shrimp Wonton,4,320
-2024-12-13 18:42:08,Roasted Chicken Noodles with Shrimp Wonton,4,320
+2024-12-13 18:42:08,Roasted Pork Noodles with Shrimp Wonton,4,280
 2024-12-13 18:43:20,Roasted Chicken Noodles with Shrimp Wonton,4,320
 2024-12-13 19:18:53,Roasted Pork Noodles,3,150
 2024-12-13 19:20:44,Roasted Pork Noodles,5,250
@@ -16,95 +16,90 @@
 2024-12-13 16:37:53,Crispy Pork Noodle with Pork Wonton,2,160
 2024-12-13 16:37:53,All In One Non-Seafood,2,300
 2024-12-13 16:40:49,Roasted Chicken Noodles with Shrimp Wonton,3,240
-2024-12-13 16:40:49,Crystal,4,12000
 2024-12-13 16:40:49,Crab Noodles with Shrimp Wonton,2,200
-2024-12-13 17:03:49,Crystal,60,180000
 2024-12-13 18:33:03,Roasted Pork Noodles,2,100
-2024-12-13 19:25:21,Roasted Pork Noodles,2,100
-2024-12-16 17:58:56,All In One Non-Seafood,1,150
+2024-12-13 19:25:21,Crab Noodles with Shrimp Wonton,1,100
+2024-12-14 09:25:21,Roasted Pork Noodles,2,100
+2024-12-14 09:28:15,Shrimp Noodles with Egg,2,180
+2024-12-14 09:50:51,Roasted Chicken Noodles with Shrimp Wonton,3,240
+2024-12-14 10:16:21,Roasted Chicken Noodles with Shrimp Wonton,3,240
+2024-12-14 10:20:41,Roasted Pork Noodles,2,100
+2024-12-14 10:45:41,Crab Noodles with Shrimp Wonton,1,100
+2024-12-14 14:20:12,All In One Non-Seafood,2,300
+2024-12-14 15:24:36,All In One Non-Seafood,2,300
+2024-12-14 15:54:15,Roasted Pork Noodles,2,100
+2024-12-14 18:31:14,Roasted Pork Noodles,2,100
+2024-12-14 19:10:25,Shrimp Noodles with Egg,2,180
+2024-12-14 20:32:12,Roasted Chicken Noodles with Shrimp Wonton,3,240
+2024-12-14 21:10:42,Roasted Pork Noodles,2,100
+2024-12-14 21:36:21,Roasted Pork Noodles with Shrimp Wonton,4,280
+2024-12-15 08:25:32,Roasted Pork Noodles,2,100
+2024-12-15 09:25:15,All In One Non-Seafood,2,300
+2024-12-15 11:30:42,All In One Non-Seafood,2,300
+2024-12-15 12:01:54,Roasted Pork Noodles,2,100
+2024-12-15 12:12:51,Minced Pork Noodles with Pork Wonton,3,210
+2024-12-15 12:20:12,Minced Pork Noodles with Pork Wonton,3,210
+2024-12-15 12:43:36,Roasted Chicken Noodles with Shrimp Wonton,3,240
+2024-12-15 13:14:31,Roasted Pork Noodles,2,100
+2024-12-15 13:29:14,Roasted Pork Noodles,2,100
+2024-12-15 13:38:53,Roasted Pork Noodles,2,100
+2024-12-15 14:17:14,All In One Non-Seafood,2,300
+2024-12-15 16:38:32,Roasted Chicken Noodles with Shrimp Wonton,3,240
+2024-12-15 19:39:14,Roasted Pork Noodles,2,100
+2024-12-15 19:48:45,Roasted Pork Noodles,2,100
+2024-12-16 17:58:56,Minced Pork Noodles with Pork Wonton,3,210
 2024-12-16 18:21:29,All In One Non-Seafood,1,150
-2024-12-16 18:31:55,All In One Non-Seafood,1,150
+2024-12-16 18:31:55,Roasted Pork Noodles with Shrimp Wonton,4,280
+2024-12-16 17:46:38,Roasted Pork Noodles,1,50
+2024-12-16 18:15:47,Crispy Pork Noodle with Pork Wonton,5,400
+2024-12-16 18:22:20,Minced Pork Noodles with Pork Wonton,3,210
+2024-12-16 18:25:19,Roasted Pork Noodles,1,50
+2024-12-16 18:26:38,Roasted Pork Noodles with Shrimp Wonton,4,280
+2024-12-16 18:34:32,Roasted Chicken Noodles with Shrimp Wonton,4,320
+2024-12-16 18:42:08,Roasted Pork Noodles with Shrimp Wonton,4,280
+2024-12-16 18:43:20,Roasted Chicken Noodles with Shrimp Wonton,4,320
+2024-12-16 19:18:53,Roasted Pork Noodles,3,150
+2024-12-16 19:20:44,Roasted Pork Noodles,5,250
+2024-12-16 19:24:47,Roasted Chicken Noodles with Shrimp Wonton,2,160
+2024-12-16 19:32:56,Shrimp Noodles with Egg,3,270
 2024-12-16 21:18:11,All In One Non-Seafood,1,150
 2024-12-16 21:23:52,All In One Non-Seafood,1,150
-2024-12-16 21:31:44,All In One Non-Seafood,1,150
-2024-12-16 21:33:27,All In One Non-Seafood,1,150
-2024-12-16 21:36:20,All In One Non-Seafood,1,150
 2024-12-17 14:13:07,All In One Non-Seafood,1,150
 2024-12-17 14:23:33,All In One Non-Seafood,1,150
-2024-12-17 15:28:16,Crispy Pork Noodles with Pork Wonton,1,80
-2024-12-17 15:43:43,Crispy Pork Noodles with Pork Wonton,1,80
-2024-12-17 15:46:11,Crispy Pork Noodles with Pork Wonton,1,80
-2024-12-17 15:50:21,Crispy Pork Noodles with Pork Wonton,1,80
-2024-12-17 15:52:16,Crispy Pork Noodles with Pork Wonton,1,80
-2024-12-17 15:54:28,Crispy Pork Noodles with Pork Wonton,1,80
-2024-12-17 15:57:47,Crispy Pork Noodles with Pork Wonton,1,80
-2024-12-17 15:58:57,Crispy Pork Noodles with Pork Wonton,1,80
+2024-12-17 15:28:16,Shrimp Noodles with Egg,2,180
+2024-12-17 15:43:43,Minced Pork Noodles with Pork Wonton,3,210
 2024-12-17 16:03:51,Crispy Pork Noodles with Pork Wonton,1,80
 2024-12-17 16:13:29,Crispy Pork Noodles with Pork Wonton,1,80
-2024-12-17 16:24:55,Crispy Pork Noodles with Pork Wonton,1,80
-2024-12-17 16:25:40,Crispy Pork Noodles with Pork Wonton,1,80
-2024-12-17 16:28:15,Crispy Pork Noodles with Pork Wonton,1,80
-2024-12-17 16:31:36,Crispy Pork Noodles with Pork Wonton,1,80
-2024-12-17 16:32:48,Crispy Pork Noodles with Pork Wonton,1,80
-2024-12-17 16:35:06,Crispy Pork Noodles with Pork Wonton,1,80
-2024-12-17 16:42:36,Crispy Pork Noodles with Pork Wonton,1,80
-2024-12-17 16:44:22,Crispy Pork Noodles with Pork Wonton,1,80
-2024-12-17 16:47:06,Crispy Pork Noodles with Pork Wonton,1,80
+2024-12-17 16:47:06,Shrimp Noodles with Egg,2,180
 2024-12-17 16:53:47,Crispy Pork Noodles with Pork Wonton,1,80
-2024-12-17 17:16:10,Crispy Pork Noodles with Pork Wonton,1,80
-2024-12-17 17:27:53,Crispy Pork Noodles with Pork Wonton,1,80
-2024-12-17 17:29:11,Crispy Pork Noodles with Pork Wonton,1,80
-2024-12-17 17:38:13,Crispy Pork Noodles with Pork Wonton,1,80
-2024-12-17 17:40:11,Crispy Pork Noodles with Pork Wonton,1,80
-2024-12-17 17:41:02,Crispy Pork Noodles with Pork Wonton,1,80
-2024-12-17 17:42:42,Crispy Pork Noodles with Pork Wonton,1,80
-2024-12-17 17:44:06,Crispy Pork Noodles with Pork Wonton,1,80
+2024-12-17 17:16:10,Minced Pork Noodles with Pork Wonton,3,210
 2024-12-17 17:44:55,Crispy Pork Noodles with Pork Wonton,1,80
 2024-12-17 17:47:23,Crispy Pork Noodles with Pork Wonton,1,80
-2024-12-17 17:49:06,Crispy Pork Noodles with Pork Wonton,1,80
-2024-12-17 17:50:30,Crispy Pork Noodles with Pork Wonton,1,80
+2024-12-17 17:49:06,Crab Noodles with Shrimp Wonton,1,100
+2024-12-17 17:50:30,Crab Noodles with Shrimp Wonton,1,100
 2024-12-17 18:07:28,Crispy Pork Noodles with Pork Wonton,1,80
-2024-12-17 18:16:33,Crispy Pork Noodles with Pork Wonton,1,80
+2024-12-17 18:16:33,Roasted Pork Noodles with Shrimp Wonton,4,280
 2024-12-17 18:20:25,Crispy Pork Noodles with Pork Wonton,1,80
 2024-12-17 18:32:33,Crispy Pork Noodles with Pork Wonton,1,80
 2024-12-17 18:49:25,Crispy Pork Noodles with Pork Wonton,1,80
 2024-12-17 19:02:56,Crispy Pork Noodles with Pork Wonton,1,80
-2024-12-17 19:34:26,Crispy Pork Noodles with Pork Wonton,1,80
-2024-12-17 19:48:18,Crispy Pork Noodles with Pork Wonton,1,80
-2024-12-17 19:51:30,Crispy Pork Noodles with Pork Wonton,1,80
+2024-12-17 19:51:30,Shrimp Noodles with Egg,2,180
 2024-12-17 19:52:54,Crispy Pork Noodles with Pork Wonton,1,80
 2024-12-17 22:24:53,Crispy Pork Noodles with Pork Wonton,1,80
 2024-12-17 22:38:10,Crispy Pork Noodles with Pork Wonton,1,80
-2024-12-17 22:44:24,Crispy Pork Noodles with Pork Wonton,1,80
-2024-12-17 22:48:11,Crispy Pork Noodles with Pork Wonton,1,80
-2024-12-17 22:49:17,Crispy Pork Noodles with Pork Wonton,1,80
-2024-12-17 22:50:53,Crispy Pork Noodles with Pork Wonton,1,80
 2024-12-17 23:03:57,Crispy Pork Noodles with Pork Wonton,1,80
-2024-12-18 00:02:48,All In One Non-Seafood,1,150
-2024-12-18 00:03:18,All In One Non-Seafood,1,150
-2024-12-18 00:03:57,All In One Non-Seafood,1,150
-2024-12-18 00:05:33,All In One Non-Seafood,1,150
-2024-12-18 00:10:55,All In One Non-Seafood,1,150
 2024-12-18 01:28:34,Roasted Chicken Noodles with Shrimp Wonton,100,8000
-2024-12-18 02:30:09,All In One Non-Seafood,1,150
-2024-12-18 02:31:34,All In One Non-Seafood,1,150
-2024-12-18 02:32:47,All In One Non-Seafood,1,150
-2024-12-18 02:33:00,All In One Non-Seafood,1,150
-2024-12-18 02:33:08,All In One Non-Seafood,1,150
-2024-12-18 02:33:10,All In One Non-Seafood,1,150
-2024-12-18 02:35:38,All In One Non-Seafood,1,150
-2024-12-18 02:40:03,All In One Non-Seafood,1,150
-2024-12-18 02:43:21,All In One Non-Seafood,1,150
-2024-12-18 02:44:03,All In One Non-Seafood,1,150
-2024-12-18 02:45:31,All In One Non-Seafood,1,150
-2024-12-18 02:46:04,All In One Non-Seafood,1,150
 2024-12-18 02:46:12,All In One Non-Seafood,1,150
 2024-12-18 02:50:15,All In One Non-Seafood,1,150
-2024-12-18 02:50:39,All In One Non-Seafood,1,150
+2024-12-18 02:50:39,Shrimp Noodles with Egg,2,180
 2024-12-18 02:57:35,All In One Non-Seafood,1,150
-2024-12-18 02:57:55,All In One Non-Seafood,1,150
-2024-12-18 03:01:55,All In One Non-Seafood,1,150
-2024-12-18 03:35:53,All In One Non-Seafood,1,150
+2024-12-18 02:57:55,Crab Noodles with Shrimp Wonton,1,100
+2024-12-18 03:01:55,Crab Noodles with Shrimp Wonton,1,100
+2024-12-18 03:35:53,Roasted Pork Noodles with Shrimp Wonton,4,280
 2024-12-18 03:36:06,All In One Non-Seafood,1,150
-2024-12-18 03:36:08,All In One Non-Seafood,1,150
 2024-12-18 03:38:26,All In One Non-Seafood,1,150
+2024-12-18 03:46:25,All In One Non-Seafood,1,150
+2024-12-18 03:47:05,All In One Non-Seafood,1,150
+2024-12-18 03:58:36,All In One Non-Seafood,1,150
+2024-12-18 04:02:07,All In One Non-Seafood,1,150
+2024-12-18 05:44:03,Crispy Pork Noodles with Pork Wonton,1,80
