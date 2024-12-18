@@ -607,6 +607,8 @@ void displayMenu() {
 // Define the maximum sizes for the arrays
 #define MAX_STOCK 100
 #define MAX_SALES 100
+#define EVENT_TYPE_RESTOCK 1
+#define EVENT_TYPE_SALE 2
 
 // Define StockItem structure
 typedef struct {
@@ -618,8 +620,8 @@ typedef struct {
     char expireDate[20];
 } StockItemLogging;
 
-#define RESTOCK_EVENT 1
-#define SALES_EVENT 2
+#define RESTOCK_EVENT 2
+#define SALES_EVENT 1
 
 // Define Stock structure
 typedef struct {
@@ -639,13 +641,15 @@ typedef struct {
     int total_price;
 } SalesLogging;
 
-// Define Event structure
+// Event logging structure
 typedef struct {
-    char date[20];
-    int type;  // e.g., RESTOCK_EVENT = 1, SALES_EVENT = 2
+    char date[20];        // Date in YYYY-MM-DD format
+    char time[9];         // Time in HH:MM:SS format
     char product_name[50];
     int quantity;
-    int total_price;
+    float total_price;
+    int type;             // Event type (Sale or Restock)
+    char date_time[30];   // Combined date and time for sorting
 } EventLogging;
 
 StockItemLogging* stockItems = NULL;
@@ -911,7 +915,9 @@ void showCustomerPurchases() {
 int compare_dates(const void *a, const void *b) {
     EventLogging *eventA = (EventLogging *)a;
     EventLogging *eventB = (EventLogging *)b;
-    return strcmp(eventA->date, eventB->date); // Lexicographical comparison of dates
+
+    // Compare only the first 10 characters (YYYY-MM-DD)
+    return strncmp(eventA->date, eventB->date, 10);
 }
 
 // Trim function to remove leading/trailing whitespace
@@ -925,32 +931,41 @@ void trim(char* str) {
     str[j - i + 1] = '\0';
 }
 
-// Function to parse stock CSV file
 void parse_stock_csv(const char *filename, StockLogging stock[], int *stock_count, EventLogging events[], int *event_count) {
     FILE *file = fopen(filename, "r");
     if (file == NULL) {
         printf("Error opening stock CSV file.\n");
         exit(1);
     }
-    
+
     char line[MAX_LINE_LENGTH];
     while (fgets(line, sizeof(line), file)) {
-        if (line[0] == '\0' || line[0] == '\n') continue;  // Skip empty lines
-        sscanf(line, "%[^,],%[^,],%d,%[^,],%[^,],%s",
-            stock[*stock_count].id, stock[*stock_count].name, &stock[*stock_count].quantity,
-            stock[*stock_count].unit, stock[*stock_count].restock_date, stock[*stock_count].expire_date);
-        
+        trim(line);  // Remove leading/trailing whitespace
+        if (line[0] == '\0') continue;  // Skip empty lines
+
+        if (sscanf(line, "%[^,],%[^,],%d,%[^,],%[^,],%s",
+                   stock[*stock_count].id, stock[*stock_count].name, &stock[*stock_count].quantity,
+                   stock[*stock_count].unit, stock[*stock_count].restock_date, stock[*stock_count].expire_date) != 6) {
+            printf("Error parsing stock CSV line: %s\n", line);
+            continue;
+        }
+
         // Record a restock event
-        strcpy(events[*event_count].date, stock[*stock_count].restock_date);
+        if (strlen(stock[*stock_count].restock_date) > 0) {
+            strcpy(events[*event_count].date, stock[*stock_count].restock_date);
+        } else {
+            strcpy(events[*event_count].date, "Unknown Date");
+        }
         events[*event_count].type = RESTOCK_EVENT;
         strcpy(events[*event_count].product_name, stock[*stock_count].name);
         events[*event_count].quantity = stock[*stock_count].quantity;
         (*event_count)++;
-        
+
         (*stock_count)++;
     }
     fclose(file);
 }
+
 
 // Function to parse sales log CSV file
 void parse_sales_log_csv(const char *filename, SalesLogging sales_log[], int *sales_count, EventLogging events[], int *event_count) {
@@ -980,7 +995,6 @@ void parse_sales_log_csv(const char *filename, SalesLogging sales_log[], int *sa
     fclose(file);
 }
 
-// Function to generate and display the report
 void generate_stock_sales_report(void) {
     StockLogging stock[MAX_PRODUCTS];
     SalesLogging sales_log[MAX_PRODUCTS];
@@ -993,44 +1007,77 @@ void generate_stock_sales_report(void) {
 
     // Sort events by date
     qsort(events, event_count, sizeof(EventLogging), compare_dates);
-    
+
     // Display the report header
     printf("===========================================================================================\n");
     printf("                                    Stock and Sales Report      \n");
     printf("===========================================================================================\n");
-    
     printf("===========================================================================================\n");
     printf("                                    Restock & Sales by Date         \n");
     printf("===========================================================================================\n");
 
-    char current_date[20] = "";
-    
+    char current_date[20] = ""; // To track the current group
+    int total_quantity = 0;    // Total quantity for the current date
+    int total_price = 0;       // Total price for the current date
+
     // Iterate through the events and print them grouped by date
     for (int i = 0; i < event_count; i++) {
-        // Print the date header once per group
-        if (strcmp(events[i].date, current_date) != 0) {
-            strcpy(current_date, events[i].date);
+        // Extract the first 10 characters of the date (YYYY-MM-DD)
+        char event_date[11];
+        strncpy(event_date, events[i].date, 10);
+        event_date[10] = '\0'; // Null-terminate the string
+
+        // Print the date header once per group and reset totals
+        if (strcmp(event_date, current_date) != 0) {
+            // Print the totals for the previous date group (if any)
+            if (i > 0) {
+                printf("-------------------------------------------------------------------------------------------\n");
+                printf("Total         | %-44s | %-8d | %-12d\n", "All Products", total_quantity, total_price);
+                printf("===========================================================================================\n");
+            }
+
+            // Update the current date group
+            strcpy(current_date, event_date);
+            total_quantity = 0;
+            total_price = 0;
+
+            // Print the new date header
             printf("\nDate: %s\n", current_date);
             printf("-------------------------------------------------------------------------------------------\n");
             printf("Event Type    | Product Name                                 | Quantity | Total Price\n");
             printf("-------------------------------------------------------------------------------------------\n");
         }
 
-        // Print the event details with adjusted formatting
+        // Print the event details
         if (events[i].type == RESTOCK_EVENT) {
             printf("Restock       | %-44s | %-8d | %-12s\n", events[i].product_name, events[i].quantity, "N/A");
+            total_quantity += events[i].quantity; // Add restocked quantity to total
         } else if (events[i].type == SALES_EVENT) {
             printf("Sale          | %-44s | %-8d | %-12d\n", events[i].product_name, events[i].quantity, events[i].total_price);
+            total_quantity += events[i].quantity;  // Add sold quantity to total
+            total_price += events[i].total_price;  // Add total price to total
         }
     }
-    
-    printf("===========================================================================================\n");
+
+    // Print the totals for the last date group
+    if (event_count > 0) {
+        printf("-------------------------------------------------------------------------------------------\n");
+        printf("Total         | %-44s | %-8d | %-12d\n", "All Products", total_quantity, total_price);
+        printf("===========================================================================================\n");
+    }
+
     printf("                                        End of Report             \n");
     printf("===========================================================================================\n");
 }
 
+
+
+
+
+
 // Main menu
 void mainLoggingMenu() {
+    
     int choice;
 
     do {
@@ -1831,18 +1878,24 @@ void EditIngredient() {
 
 // Delete Menu Items
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MAX_ROWS 100
+#define MAX_LINE_LENGTH 512
+
 void DeleteMenuItem() {
     typedef struct {
-        char code[20];
+        int id;
         char name[100];
-        double price;
-        char description[100];
+        float price;
     } MenuItem;
 
     MenuItem menu[MAX_ROWS];
     int rowCount = 0;
 
-    // Read from Menu.csv
+    // Open the Menu.csv file
     FILE *file = fopen("Menu.csv", "r");
     if (!file) {
         perror("Error opening Menu.csv");
@@ -1852,115 +1905,76 @@ void DeleteMenuItem() {
     char line[MAX_LINE_LENGTH];
     int isHeader = 1;
 
+    // Read the menu items into the menu array
     while (fgets(line, sizeof(line), file)) {
         if (isHeader) {
-            isHeader = 0;
+            isHeader = 0; // Skip the header line
             continue;
         }
 
-        sscanf(line, "%[^,],%[^,],%lf,%[^\n]",
-               menu[rowCount].code,
-               menu[rowCount].name,
-               &menu[rowCount].price,
-               menu[rowCount].description);
-
+        sscanf(line, "%d,%[^,],%f", &menu[rowCount].id, menu[rowCount].name, &menu[rowCount].price);
         rowCount++;
     }
     fclose(file);
 
-    // Display menu for deletion
-    clearScreen();
+    // Display the menu items
     printf("===================================================================================\n");
-    printf("                                       MENU\n");
+    printf("                                MENU ITEMS\n");
     printf("===================================================================================\n");
-    printf("Code    Name                                             Price     Description\n");
+    printf("ID   Name                                      Price\n");
     printf("-----------------------------------------------------------------------------------\n");
 
     for (int i = 0; i < rowCount; i++) {
-        printf("%-7s%-50s%-10.2f%-30s\n",
-               menu[i].code,
-               menu[i].name,
-               menu[i].price,
-               menu[i].description);
+        printf("%-4d %-40s %.2f\n", menu[i].id, menu[i].name, menu[i].price);
     }
 
-    printf("===================================================================================\n");
-    printf("Enter the code of the menu item to delete: ");
+    // Prompt the user for the ID of the menu item to delete
+    int deleteId;
+    printf("Enter the ID of the menu item to delete: ");
+    scanf("%d", &deleteId);
+    getchar(); // Clear the input buffer
 
-    char codeToDelete[20];
-    fgets(codeToDelete, sizeof(codeToDelete), stdin);
-    codeToDelete[strcspn(codeToDelete, "\n")] = '\0';
+    // Check if the ID exists and delete it
+    int found = 0;
+    for (int i = 0; i < rowCount; i++) {
+        if (menu[i].id == deleteId) {
+            found = 1;
+            for (int j = i; j < rowCount - 1; j++) {
+                menu[j] = menu[j + 1]; // Shift items up
+            }
+            rowCount--;
+            break;
+        }
+    }
 
-    FILE *tempFile = fopen("TempMenu.csv", "w");
-    if (!tempFile) {
-        perror("Error creating temporary file");
+    if (!found) {
+        printf("Menu item with ID %d not found.\n", deleteId);
         return;
     }
 
-    int found = 0;
+    // Reassign IDs to ensure they are sequential
     for (int i = 0; i < rowCount; i++) {
-        if (strcmp(menu[i].code, codeToDelete) != 0) {
-            fprintf(tempFile, "%s,%s,%.2f,%s\n",
-                    menu[i].code,
-                    menu[i].name,
-                    menu[i].price,
-                    menu[i].description);
-        } else {
-            found = 1;
-        }
-    }
-    fclose(tempFile);
-
-    // Update Menu.csv
-    if (found) {
-        remove("Menu.csv");
-        rename("TempMenu.csv", "Menu.csv");
-        printf("Menu item with code '%s' deleted successfully!\n", codeToDelete);
-
-        // Delete related records from Ingredient.csv
-        FILE *ingredientFile = fopen("Ingredient.csv", "r");
-        if (!ingredientFile) {
-            perror("Error opening Ingredient.csv");
-            return;
-        }
-
-        FILE *tempIngredientFile = fopen("TempIngredient.csv", "w");
-        if (!tempIngredientFile) {
-            perror("Error creating temporary Ingredient file");
-            fclose(ingredientFile);
-            return;
-        }
-
-        while (fgets(line, sizeof(line), ingredientFile)) {
-            char menuName[100], ingredientName[50];
-            double amount;
-
-            sscanf(line, "%[^,],%[^,],%lf", menuName, ingredientName, &amount);
-
-            // Skip lines corresponding to the deleted menu item
-            int skipLine = 0;
-            for (int i = 0; i < rowCount; i++) {
-                if (strcmp(menuName, menu[i].name) == 0 && strcmp(menu[i].code, codeToDelete) == 0) {
-                    skipLine = 1;
-                    break;
-                }
-            }
-
-            if (!skipLine) {
-                fprintf(tempIngredientFile, "%s,%s,%.2f\n", menuName, ingredientName, amount);
-            }
-        }
-
-        fclose(ingredientFile);
-        fclose(tempIngredientFile);
-
-        remove("Ingredient.csv");
-        rename("TempIngredient.csv", "Ingredient.csv");
-    } else {
-        remove("TempMenu.csv");
-        printf("Menu item with code '%s' not found.\n", codeToDelete);
+        menu[i].id = i + 1; // IDs start from 1
     }
 
+    // Write the updated menu back to the file
+    file = fopen("Menu.csv", "w");
+    if (!file) {
+        perror("Error writing to Menu.csv");
+        return;
+    }
+
+    // Write the header
+    fprintf(file, "id,name,price\n");
+
+    // Write the updated menu items
+    for (int i = 0; i < rowCount; i++) {
+        fprintf(file, "%d,%s,%.2f\n", menu[i].id, menu[i].name, menu[i].price);
+    }
+
+    fclose(file);
+
+    printf("\nMenu item deleted and IDs updated successfully!\n");
     printf("Press Enter to return to the menu...\n");
     getchar();
 }
@@ -2793,10 +2807,16 @@ void restockMenu(Item items[], int *rowCount, char uniqueNames[][50], int unique
     // Prompt user for restock details
     printf("Enter restock amount for %s: ", uniqueNames[choice]);
     scanf("%d", &restockAmount);
+     while(restockAmount<=0){
+                    printf("Invalid quantity!\n");
+                    printf("Enter the quantity: ");
+                    scanf("%d", &restockAmount);
+                }
+    
 
     // Prompt user for unit and validate
     do {
-        printf("Enter unit for %s (e.g., g, piece): ", uniqueNames[choice]);
+        printf("Enter unit for %s (gram / piece / Egg): ", uniqueNames[choice]);
         scanf("%s", inputUnit);
 
         int unitMatches = 0;
@@ -3747,6 +3767,11 @@ void viewItemDetails(int choice){
             if(a == 1){
                 printf("Enter the quantity: ");
                 scanf("%d", &quantity);
+                while(quantity<=0){
+                    printf("Invalid quantity!\n");
+                    printf("Enter the quantity: ");
+                    scanf("%d", &quantity);
+                }
                 clearInputBuffer();
             }else if(a == 2){
                 return;
